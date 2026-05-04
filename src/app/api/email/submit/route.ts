@@ -65,6 +65,7 @@ export async function POST(req: Request) {
     email: email.toLowerCase(),
     consent: true,
     rank_at_submit: rank,
+    score_at_submit: myScore.score,
   });
 
   if (insertErr) {

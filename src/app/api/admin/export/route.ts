@@ -28,7 +28,7 @@ export async function GET(req: Request) {
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("emails")
-    .select("display_name, email, consent, rank_at_submit, created_at")
+    .select("display_name, email, consent, rank_at_submit, score_at_submit, created_at")
     .order("created_at", { ascending: true });
 
   if (error) {
@@ -36,9 +36,14 @@ export async function GET(req: Request) {
   }
 
   const rows = (data ?? []).map((r) =>
-    [r.display_name, r.email, r.consent, r.rank_at_submit, r.created_at].map(csvCell).join(",")
+    [r.display_name, r.email, r.consent, r.rank_at_submit, r.score_at_submit, r.created_at]
+      .map(csvCell)
+      .join(",")
   );
-  const csv = ["display_name,email,consent,rank_at_submit,created_at", ...rows].join("\n");
+  const csv = [
+    "display_name,email,consent,rank_at_submit,score_at_submit,created_at",
+    ...rows,
+  ].join("\n");
 
   return new NextResponse(csv, {
     headers: {
