@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { useGameStore } from "@/store/gameStore";
 import type { LeaderboardEntry } from "@/schemas/leaderboard";
 
@@ -11,7 +12,6 @@ export function LeaderboardScreen() {
   const [loading, setLoading] = useState(true);
 
   const sessionToken = useGameStore((s) => s.sessionToken);
-  const reset = useGameStore((s) => s.reset);
 
   useEffect(() => {
     const params = sessionToken ? `?sessionToken=${encodeURIComponent(sessionToken)}` : "";
@@ -25,68 +25,76 @@ export function LeaderboardScreen() {
       .finally(() => setLoading(false));
   }, [sessionToken]);
 
-  const medalFor = (rank: number) => (rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null);
-
   return (
     <motion.div
-      className="flex flex-col h-full w-full"
+      className="relative flex h-full w-full flex-col items-center overflow-hidden px-7 text-center"
+      style={{
+        backgroundImage: "url('/assets/backgrounds/leaderboard.png')",
+        backgroundPosition: "center",
+        backgroundSize: "cover",
+      }}
       initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0 }}
     >
-      <div className="bg-sakura-500 text-white text-center py-4 px-4 flex items-center justify-between">
-        <span className="text-lg font-bold">🏅 Leaderboard</span>
-        {yourRank !== null && (
-          <span className="text-sm bg-white/20 rounded-full px-3 py-1">Your rank: #{yourRank}</span>
-        )}
+      <div className="flex h-[20%] w-full flex-col items-center justify-end pb-1">
+        <div className="relative flex h-[72px] w-[310px] items-center justify-center bg-[url('/assets/ui/decorations/ribbon.png')] bg-contain bg-center bg-no-repeat text-lg font-black uppercase text-white [text-shadow:2px_2px_0_#9b2b3d]">
+          Leaderboard
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <p className="text-[0.72rem] font-bold text-[#4D2809]">Live Ranking</p>
+
+      <div className="mt-3 w-full max-w-[292px] overflow-hidden rounded-lg border-2 border-[#b68a65] bg-[#FBE8D6] text-[#4D2809]">
         {loading && (
-          <div className="flex justify-center py-12">
-            <span className="animate-spin text-2xl">🌸</span>
+          <div className="flex h-[312px] items-center justify-center">
+            <Image
+              src="/assets/game/petals/sakura-leaf-1.png"
+              alt="Loading"
+              width={32}
+              height={32}
+              className="h-8 w-8 animate-spin object-contain"
+              priority
+            />
           </div>
         )}
 
         {!loading && entries.length === 0 && (
-          <p className="text-center text-sakura-400 py-8">No scores yet. Be the first!</p>
+          <div className="flex h-[312px] items-center justify-center px-6 text-[0.72rem] font-bold leading-relaxed text-sakura-600">
+            No scores yet.
+            <br />
+            Be the first!
+          </div>
         )}
 
-        {entries.map((entry, i) => {
+        {!loading && entries.length > 0 && entries.map((entry, i) => {
           const isYou = yourRank !== null && entry.rank === yourRank;
-          const medal = medalFor(entry.rank);
           return (
             <motion.div
               key={i}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              className={`flex items-center justify-between rounded-xl px-4 py-3 ${
-                isYou ? "bg-sakura-100 border-2 border-sakura-400" : "bg-white shadow-sm"
+              className={`grid h-[42px] grid-cols-[42px_1fr_72px] items-center border-b border-[#d8b98f] px-3 text-[0.68rem] font-bold last:border-b-0 ${
+                isYou ? "bg-sakura-300/80 text-[#4D2809]" : "bg-[#FBE8D6]"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-xl w-8 text-center">
-                  {medal ?? <span className="text-sakura-300 text-sm">#{entry.rank}</span>}
-                </span>
-                <span className={`font-semibold ${isYou ? "text-sakura-700" : "text-gray-700"}`}>
-                  {isYou ? "You" : `Player`}
-                </span>
-              </div>
-              <span className="font-bold text-sakura-600">{entry.score} pts</span>
+              <span>{String(entry.rank).padStart(2, "0")}</span>
+              <span className="truncate text-left">{isYou ? "YOU" : entry.name}</span>
+              <span className="text-right">{entry.score}</span>
             </motion.div>
           );
         })}
       </div>
 
-      <div className="p-4 border-t border-sakura-100">
-        <button
-          onClick={reset}
-          className="w-full bg-sakura-500 text-white font-bold py-3 rounded-full"
-        >
-          Play Again
-        </button>
-      </div>
+      <a
+        href="https://applewood-signature.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="pixel-button pixel-button-secondary absolute bottom-2 w-[208px] px-3 py-3 text-[0.68rem] whitespace-nowrap"
+      >
+        Get my snack
+      </a>
     </motion.div>
   );
 }

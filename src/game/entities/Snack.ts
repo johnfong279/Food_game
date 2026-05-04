@@ -1,25 +1,87 @@
 import type { Entity } from "./Petal";
 
-export type SnackVariant = "mochi" | "taiyaki" | "dango" | "pocky";
+export type SnackVariant =
+  | "okraCrisp"
+  | "potatoStick"
+  | "purpleOnionCrisp"
+  | "shiitakeMushroom"
+  | "okraPack"
+  | "potatoPack"
+  | "purpleOnionPack"
+  | "shiitakeMushroomPack";
 
 interface SnackConfig {
-  color: string;
-  accentColor: string;
+  src: string;
   points: number;
   speed: number;
-  size: number;
+  width: number;
+  height: number;
 }
 
 const SNACK_CONFIGS: Record<SnackVariant, SnackConfig> = {
-  mochi:   { color: "#f9e4f0", accentColor: "#e891b8", points: 5, speed: 2.0, size: 36 },
-  taiyaki: { color: "#e8a96a", accentColor: "#b5651d", points: 8, speed: 2.5, size: 40 },
-  dango:   { color: "#c8a2c8", accentColor: "#9b59b6", points: 6, speed: 2.2, size: 34 },
-  pocky:   { color: "#c0392b", accentColor: "#7b241c", points: 4, speed: 3.0, size: 32 },
+  okraCrisp: {
+    src: "/assets/game/items/okra-crisps-20.png",
+    points: 20,
+    speed: 2.2,
+    width: 92,
+    height: 92,
+  },
+  potatoStick: {
+    src: "/assets/game/items/potato-sticks-20.png",
+    points: 20,
+    speed: 2.5,
+    width: 92,
+    height: 92,
+  },
+  purpleOnionCrisp: {
+    src: "/assets/game/items/sweet-purple-onion-crisps-20.png",
+    points: 20,
+    speed: 2.3,
+    width: 92,
+    height: 92,
+  },
+  shiitakeMushroom: {
+    src: "/assets/game/items/shiitake-mushroom-crisps-20.png",
+    points: 20,
+    speed: 2.1,
+    width: 92,
+    height: 92,
+  },
+  okraPack: {
+    src: "/assets/game/items/okra-crisps-pack-50.png",
+    points: 50,
+    speed: 1.8,
+    width: 104,
+    height: 104,
+  },
+  potatoPack: {
+    src: "/assets/game/items/potato-sticks-pack-50.png",
+    points: 50,
+    speed: 1.9,
+    width: 104,
+    height: 104,
+  },
+  purpleOnionPack: {
+    src: "/assets/game/items/sweet-purple-onion-crisps-pack-50.png",
+    points: 50,
+    speed: 1.8,
+    width: 104,
+    height: 104,
+  },
+  shiitakeMushroomPack: {
+    src: "/assets/game/items/shiitake-mushroom-crisps-pack-50.png",
+    points: 50,
+    speed: 1.8,
+    width: 104,
+    height: 104,
+  },
 };
 
-const VARIANTS: SnackVariant[] = ["mochi", "taiyaki", "dango", "pocky"];
+const VARIANTS = Object.keys(SNACK_CONFIGS) as SnackVariant[];
 
 export class Snack implements Entity {
+  private static readonly imageCache = new Map<string, HTMLImageElement>();
+
   id: number;
   x: number;
   y: number;
@@ -36,8 +98,9 @@ export class Snack implements Entity {
     this.id = id;
     this.variant = VARIANTS[Math.floor(Math.random() * VARIANTS.length)];
     this.config = SNACK_CONFIGS[this.variant];
-    this.width = this.config.size;
-    this.height = this.config.size;
+    Snack.loadImage(this.config.src);
+    this.width = this.config.width;
+    this.height = this.config.height;
     this.x = Math.random() * (canvasWidth - this.width);
     this.y = -this.height;
     this.vy = this.config.speed;
@@ -52,37 +115,43 @@ export class Snack implements Entity {
   }
 
   render(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
-    const { color, accentColor } = this.config;
-    const cx = this.x + this.width / 2;
-    const cy = this.y + this.height / 2;
-    const r = this.width / 2;
+    const image = Snack.imageCache.get(this.config.src);
 
-    ctx.save();
-    ctx.fillStyle = color;
-    ctx.strokeStyle = accentColor;
-    ctx.lineWidth = 2;
-
-    if (this.variant === "mochi" || this.variant === "dango") {
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-    } else if (this.variant === "taiyaki") {
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, r, r * 1.4, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-    } else {
-      ctx.fillRect(this.x, cy - 3, this.width, 6);
-      ctx.strokeRect(this.x, cy - 3, this.width, 6);
+    if (image?.complete && image.naturalWidth > 0) {
+      const smoothing = ctx.imageSmoothingEnabled;
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(image, this.x, this.y, this.width, this.height);
+      ctx.imageSmoothingEnabled = smoothing;
+      ctx.restore();
+      return;
     }
 
-    ctx.fillStyle = accentColor;
-    ctx.font = `${r * 0.7}px serif`;
+    this.renderFallback(ctx);
+  }
+
+  private static loadImage(src: string) {
+    if (Snack.imageCache.has(src) || typeof Image === "undefined") return;
+
+    const image = new Image();
+    image.src = src;
+    Snack.imageCache.set(src, image);
+  }
+
+  private renderFallback(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
+    ctx.save();
+    ctx.fillStyle = this.points === 50 ? "#f7c948" : "#66a80f";
+    ctx.strokeStyle = "#2b5d12";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(this.x, this.y, this.width, this.height, 8);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "16px 'Press Start 2P', sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    const label: Record<SnackVariant, string> = { mochi: "🍡", taiyaki: "🐟", dango: "🍢", pocky: "🍫" };
-    ctx.fillText(label[this.variant], cx, cy);
+    ctx.fillText(`+${this.points}`, this.x + this.width / 2, this.y + this.height / 2);
     ctx.restore();
   }
 }

@@ -9,13 +9,10 @@ export function GameScreen() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
   const [displayScore, setDisplayScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(30);
 
   const sessionToken = useGameStore((s) => s.sessionToken);
   const score = useGameStore((s) => s.score);
-  const petalsCaught = useGameStore((s) => s.petalsCaught);
-  const snacksCaught = useGameStore((s) => s.snacksCaught);
-  const events = useGameStore((s) => s.events);
   const addScore = useGameStore((s) => s.addScore);
   const recordEvent = useGameStore((s) => s.recordEvent);
   const setResult = useGameStore((s) => s.setResult);
@@ -67,7 +64,10 @@ export function GameScreen() {
     engine.start();
 
     const timer = setInterval(() => {
-      setTimeLeft((t) => Math.max(0, t - 1));
+      setTimeLeft((t) => {
+        if (engineRef.current?.isPaused()) return t;
+        return Math.max(0, t - 1);
+      });
     }, 1000);
 
     return () => {
@@ -76,31 +76,37 @@ export function GameScreen() {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const formattedTime = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
   return (
     <motion.div
-      className="flex flex-col items-center justify-start h-full w-full"
+      className="absolute inset-0 h-full w-full overflow-hidden bg-white"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* HUD */}
-      <div className="w-full flex justify-between items-center px-4 py-2 bg-sakura-100/80 backdrop-blur z-10">
-        <span className="text-sakura-700 font-bold text-xl">Score: {displayScore}</span>
-        <span
-          className={`font-bold text-xl ${timeLeft <= 10 ? "text-red-600 animate-pulse" : "text-sakura-700"}`}
-        >
-          {timeLeft}s
-        </span>
+      <div className="game-hud absolute left-0 right-0 top-0 z-10 flex items-start justify-center gap-3 px-4 pt-4">
+        <div className="hud-stat-panel w-[106px]" aria-label={`Score ${displayScore}`}>
+          <span className="hud-stat-label">Score</span>
+          <span className="hud-stat-value">{displayScore}</span>
+        </div>
+
+        <div className="hud-stat-panel w-[106px]" aria-label={`Time ${formattedTime}`}>
+          <span className="hud-stat-label">Time</span>
+          <span className={`hud-stat-value ${timeLeft <= 10 ? "animate-pulse" : ""}`}>
+            {formattedTime}
+          </span>
+        </div>
       </div>
 
       {/* Canvas */}
-      <div className="relative flex-1 w-full overflow-hidden">
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full touch-none"
-          style={{ cursor: "crosshair" }}
-        />
-      </div>
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 z-0 touch-none"
+        style={{ cursor: "crosshair" }}
+      />
     </motion.div>
   );
 }

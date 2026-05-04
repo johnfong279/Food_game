@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
 import { useGameStore } from "@/store/gameStore";
 
 export function LandingScreen() {
@@ -19,7 +21,7 @@ export function LandingScreen() {
       const { sessionToken } = await res.json();
       setSessionToken(sessionToken);
       setScreen("game");
-    } catch (e) {
+    } catch {
       setError("Could not start game. Please try again.");
     } finally {
       setLoading(false);
@@ -28,56 +30,60 @@ export function LandingScreen() {
 
   return (
     <motion.div
-      className="flex flex-col items-center justify-center h-full w-full relative overflow-hidden"
+      className="absolute inset-0 flex h-full w-full flex-col items-center justify-center overflow-hidden"
+      style={{
+        backgroundImage: "url('/assets/effects/leaves-blowing/gameplay-leaves-blowing.gif')",
+        backgroundPosition: "center",
+        backgroundSize: "cover",
+      }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Animated background petals */}
-      {Array.from({ length: 12 }).map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute text-3xl pointer-events-none select-none"
-          initial={{ y: -40, x: `${(i * 8) % 100}%`, opacity: 0.6 }}
-          animate={{ y: "110%", rotate: 360 }}
-          transition={{ duration: 4 + (i % 4), repeat: Infinity, delay: i * 0.5, ease: "linear" }}
-        >
-          🌸
-        </motion.div>
-      ))}
+      <div className="z-10 absolute inset-0">
+        <div className="absolute left-1/2 top-[35%] -translate-x-1/2 -translate-y-1/2 text-center">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, type: "spring" }}
+          >
+            <Image
+              src="/assets/branding/bloom-catcher-text.png"
+              alt="Bloom Catcher. Play the game, win free snack!"
+              width={1536}
+              height={1024}
+              priority
+              className="object-contain"
+              style={{ width: 420, maxWidth: "none", imageRendering: "pixelated" }}
+            />
+          </motion.div>
+        </div>
 
-      <div className="z-10 flex flex-col items-center gap-6 p-8">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2, type: "spring" }}
-          className="text-center"
-        >
-          <div className="text-6xl mb-2">🌸</div>
-          <h1 className="text-4xl font-bold text-sakura-700">Sakura Snack</h1>
-          <p className="text-sakura-500 mt-2 text-lg">Catch petals &amp; snacks to win!</p>
-        </motion.div>
+        {error && (
+          <p className="absolute left-1/2 top-[55%] w-72 -translate-x-1/2 text-center text-sm font-semibold text-red-500">
+            {error}
+          </p>
+        )}
 
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-center text-sm text-sakura-600 bg-sakura-50 rounded-2xl p-4 max-w-xs"
-        >
-          <p>Tap falling sakura petals and Japanese snacks as fast as you can.</p>
-          <p className="mt-1 font-semibold">Top players win a discount code! 🎁</p>
-        </motion.div>
+        <div className="absolute left-1/2 top-[84%] -translate-x-1/2 -translate-y-1/2">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleStart}
+            disabled={loading}
+            aria-busy={loading}
+            aria-label={loading ? "Starting game" : "Start game"}
+            className="start-image-button"
+          >
+            <span className="sr-only">{loading ? "Starting game" : "Start game"}</span>
+          </motion.button>
+        </div>
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={handleStart}
-          disabled={loading}
-          className="bg-sakura-500 hover:bg-sakura-600 active:bg-sakura-700 text-white font-bold text-xl px-10 py-4 rounded-full shadow-lg disabled:opacity-60 transition-colors"
+        <Link
+          href="/terms"
+          className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-white/85 px-4 py-2 text-[0.55rem] font-semibold uppercase tracking-normal text-sakura-600 shadow-md transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sakura-300"
         >
-          {loading ? "Starting…" : "▶ Start Game"}
-        </motion.button>
+          T&amp;C
+        </Link>
       </div>
     </motion.div>
   );

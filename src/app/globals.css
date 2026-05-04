@@ -17,7 +17,145 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-press-start-2p), Arial, Helvetica, sans-serif;
+}
+
+@layer components {
+  .pixel-button {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    background-image: url("/assets/ui/button-background.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    color: #fff7f7;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0;
+    text-align: center;
+    text-shadow: 2px 2px 0 #9b2b3d;
+    text-transform: uppercase;
+    transition:
+      filter 120ms ease,
+      transform 120ms ease;
+    image-rendering: pixelated;
+  }
+
+  .pixel-button:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+
+  .pixel-button:active:not(:disabled) {
+    transform: translateY(3px);
+    filter: brightness(0.92);
+  }
+
+  .pixel-button:focus-visible {
+    outline: 3px solid #ffe1e7;
+    outline-offset: 3px;
+  }
+
+  .pixel-button:disabled {
+    cursor: not-allowed;
+    filter: grayscale(0.9) brightness(0.78);
+    color: #fff8f3;
+    text-shadow: 2px 2px 0 #756a64;
+  }
+
+  .pixel-button-secondary {
+    filter: saturate(0.9);
+  }
+
+  .pixel-button-secondary:hover:not(:disabled) {
+    filter: saturate(0.9) brightness(1.08);
+  }
+
+  .pixel-button-secondary:active:not(:disabled) {
+    filter: saturate(0.9) brightness(0.92);
+  }
+
+  .pixel-button-small {
+    min-height: 36px;
+    padding: 0 18px;
+    font-size: 0.75rem;
+  }
+
+  .start-image-button {
+    width: 220px;
+    height: 82px;
+    border: 0;
+    background-color: transparent;
+    background-image: url("/assets/ui/buttons/start/idle.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    image-rendering: pixelated;
+  }
+
+  .start-image-button:hover:not(:disabled) {
+    background-image: url("/assets/ui/buttons/start/hover.png");
+  }
+
+  .start-image-button:active:not(:disabled) {
+    background-image: url("/assets/ui/buttons/start/pressed.png");
+    transform: translateY(3px);
+  }
+
+  .start-image-button:focus-visible {
+    outline: 3px solid #ffe1e7;
+    outline-offset: 3px;
+  }
+
+  .start-image-button:disabled {
+    cursor: not-allowed;
+    background-image: url("/assets/ui/buttons/start/disabled.png");
+  }
+
+  .game-hud {
+    pointer-events: none;
+  }
+
+  .hud-stat-panel {
+    display: flex;
+    height: 58px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px 11px;
+    border: 0;
+    background-image: url("/assets/ui/timer-board.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    image-rendering: pixelated;
+    pointer-events: auto;
+  }
+
+  .hud-stat-label {
+    color: #5d4a3c;
+    font-size: 0.58rem;
+    font-weight: 900;
+    line-height: 1;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 0 #fff4dc;
+  }
+
+  .hud-stat-value {
+    margin-top: 5px;
+    color: #d93b56;
+    font-size: 1.14rem;
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 1px 1px 0 #fff4dc;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
 }
 
 @layer utilities {
