@@ -14,6 +14,7 @@ export interface GameCallbacks {
   onScore: (points: number, type: "petal" | "snack") => void;
   onEvent: (event: GameEvent) => void;
   onEnd: () => void;
+  onTimeLeft?: (timeLeft: number) => void;
 }
 
 const LOGICAL_WIDTH = 400;
@@ -64,6 +65,7 @@ export class GameEngine {
   private startTime: number | null = null;
   private pauseStartedAt: number | null = null;
   private pausedDuration = 0;
+  private lastTimeLeft = GAME_DURATION_MS / 1000;
   private callbacks: GameCallbacks;
   private scale: number = 1;
   private basketX = (LOGICAL_WIDTH - BASKET_WIDTH) / 2;
@@ -81,6 +83,7 @@ export class GameEngine {
     this.spawner = new Spawner();
     this.input = new InputSystem(canvas, this.moveBasket.bind(this), this.scale);
     this.loadBackground();
+    Snack.preloadImages();
     GameEngine.loadBasketImages();
     GameEngine.loadScorePopupImages();
     this.setupCanvas();
@@ -300,11 +303,22 @@ export class GameEngine {
     }
   }
 
+  private emitTimeLeft(elapsed: number) {
+    const timeLeft = Math.max(0, Math.ceil((GAME_DURATION_MS - elapsed) / 1000));
+
+    if (timeLeft !== this.lastTimeLeft) {
+      this.lastTimeLeft = timeLeft;
+      this.callbacks.onTimeLeft?.(timeLeft);
+    }
+  }
+
   private loop(timestamp: number) {
     if (!this.startTime) this.startTime = timestamp;
     const elapsed = timestamp - this.startTime - this.pausedDuration;
+    this.emitTimeLeft(elapsed);
 
     if (elapsed >= GAME_DURATION_MS) {
+      this.emitTimeLeft(GAME_DURATION_MS);
       this.render();
       this.stop();
       this.callbacks.onEnd();
@@ -332,6 +346,8 @@ export class GameEngine {
     this.startTime = null;
     this.pauseStartedAt = null;
     this.pausedDuration = 0;
+    this.lastTimeLeft = GAME_DURATION_MS / 1000;
+    this.callbacks.onTimeLeft?.(this.lastTimeLeft);
     this.rafId = requestAnimationFrame((ts) => this.loop(ts));
   }
 

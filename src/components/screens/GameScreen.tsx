@@ -31,6 +31,7 @@ export function GameScreen() {
     const engine = new GameEngine(canvasRef.current, {
       onScore: (points, type) => addScore(points, type),
       onEvent: (event) => recordEvent(event),
+      onTimeLeft: setTimeLeft,
       onEnd: async () => {
         const duration = Date.now() - startTs;
         setDuration(duration);
@@ -63,15 +64,7 @@ export function GameScreen() {
     engineRef.current = engine;
     engine.start();
 
-    const timer = setInterval(() => {
-      setTimeLeft((t) => {
-        if (engineRef.current?.isPaused()) return t;
-        return Math.max(0, t - 1);
-      });
-    }, 1000);
-
     return () => {
-      clearInterval(timer);
       engine.destroy();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

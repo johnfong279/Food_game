@@ -126,8 +126,6 @@ export class Snack implements Entity {
       ctx.restore();
       return;
     }
-
-    this.renderFallback(ctx);
   }
 
   private static loadImage(src: string) {
@@ -138,20 +136,9 @@ export class Snack implements Entity {
     Snack.imageCache.set(src, image);
   }
 
-  private renderFallback(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
-    ctx.save();
-    ctx.fillStyle = this.points === 50 ? "#f7c948" : "#66a80f";
-    ctx.strokeStyle = "#2b5d12";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(this.x, this.y, this.width, this.height, 8);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "16px 'Press Start 2P', sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(`+${this.points}`, this.x + this.width / 2, this.y + this.height / 2);
-    ctx.restore();
+  static preloadImages() {
+    for (const config of Object.values(SNACK_CONFIGS)) {
+      Snack.loadImage(config.src);
+    }
   }
 }
