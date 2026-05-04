@@ -88,7 +88,7 @@ export function GameScreen() {
 
         <div className="hud-stat-panel w-[106px]" aria-label={`Time ${formattedTime}`}>
           <span className="hud-stat-label">Time</span>
-          <span className={`hud-stat-value ${timeLeft <= 10 ? "animate-pulse" : ""}`}>
+          <span className={`hud-stat-value ${timeLeft <= 10 ? "hud-stat-value-warning" : ""}`}>
             {formattedTime}
           </span>
         </div>

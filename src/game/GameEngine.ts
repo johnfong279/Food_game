@@ -244,15 +244,6 @@ export class GameEngine {
 
       if (image?.complete && image.naturalWidth > 0) {
         ctx.drawImage(image, x, y, width, height);
-      } else {
-        ctx.fillStyle = popup.points === 1 ? "#ff85a1" : "#ffffff";
-        ctx.strokeStyle = "#ec4899";
-        ctx.lineWidth = 3;
-        ctx.font = "24px 'Press Start 2P', sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.strokeText(`+${popup.points}`, x + width / 2, y + height / 2);
-        ctx.fillText(`+${popup.points}`, x + width / 2, y + height / 2);
       }
 
       ctx.restore();

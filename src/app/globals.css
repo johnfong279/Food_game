@@ -156,6 +156,11 @@ body {
     white-space: nowrap;
   }
 
+  .hud-stat-value-warning {
+    color: #c5163f;
+    opacity: 1;
+  }
+
 }
 
 @layer utilities {
