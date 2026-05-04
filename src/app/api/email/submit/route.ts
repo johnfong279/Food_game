@@ -5,8 +5,6 @@ import { EmailSubmitRequestSchema } from "@/schemas/email";
 
 export const runtime = "nodejs";
 
-const TOP_RANK_THRESHOLD = 3;
-
 export async function POST(req: Request) {
   let body: unknown;
   try {
@@ -20,7 +18,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid payload", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { sessionToken, email, honeypot } = parsed.data;
+  const { sessionToken, displayName, email, honeypot } = parsed.data;
 
   if (honeypot && honeypot.length > 0) {
     return NextResponse.json({ success: true });
@@ -61,12 +59,9 @@ export async function POST(req: Request) {
 
   const rank = (aboveCount ?? 0) + 1;
 
-  if (rank > TOP_RANK_THRESHOLD) {
-    return NextResponse.json({ error: "Email submission reserved for top 3 players" }, { status: 403 });
-  }
-
   const { error: insertErr } = await supabase.from("emails").insert({
     session_id: session.id,
+    display_name: displayName,
     email: email.toLowerCase(),
     consent: true,
     rank_at_submit: rank,
@@ -74,7 +69,10 @@ export async function POST(req: Request) {
 
   if (insertErr) {
     if (insertErr.code === "23505") {
-      return NextResponse.json({ success: true });
+      return NextResponse.json(
+        { error: "Each email can be used one time." },
+        { status: 409 }
+      );
     }
     console.error("email insert error", insertErr);
     return NextResponse.json({ error: "Failed to save email" }, { status: 500 });

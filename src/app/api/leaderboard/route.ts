@@ -12,7 +12,7 @@ export async function GET(req: Request) {
 
   const { data: top10, error } = await supabase
     .from("scores")
-    .select("score, created_at")
+    .select("score, created_at, session_id")
     .order("score", { ascending: false })
     .order("created_at", { ascending: true })
     .limit(10);
@@ -21,8 +21,24 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Failed to fetch leaderboard" }, { status: 500 });
   }
 
+  const sessionIds = (top10 ?? [])
+    .map((row) => row.session_id)
+    .filter((sessionId): sessionId is string => Boolean(sessionId));
+
+  const { data: emailRows } = sessionIds.length > 0
+    ? await supabase
+        .from("emails")
+        .select("session_id, display_name")
+        .in("session_id", sessionIds)
+    : { data: [] };
+
+  const nameBySessionId = new Map(
+    (emailRows ?? []).map((row) => [row.session_id, row.display_name] as const)
+  );
+
   const entries = (top10 ?? []).map((row, i) => ({
     rank: i + 1,
+    name: nameBySessionId.get(row.session_id) || `Player ${String(i + 1).padStart(2, "0")}`,
     score: row.score,
     createdAt: row.created_at,
   }));

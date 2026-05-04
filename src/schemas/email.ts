@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const EmailSubmitRequestSchema = z.object({
   sessionToken: z.string().min(1),
+  displayName: z.string().trim().min(1).max(16),
   email: z.string().email(),
   consent: z.literal(true),
   honeypot: z.string().max(0).optional(),

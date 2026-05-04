@@ -4,6 +4,11 @@ import { createServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
+function csvCell(value: unknown) {
+  const text = String(value ?? "");
+  return `"${text.replaceAll('"', '""')}"`;
+}
+
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization") ?? "";
   const base64 = authHeader.replace("Basic ", "");
@@ -23,17 +28,17 @@ export async function GET(req: Request) {
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("emails")
-    .select("email, consent, rank_at_submit, created_at")
+    .select("display_name, email, consent, rank_at_submit, created_at")
     .order("created_at", { ascending: true });
 
   if (error) {
     return NextResponse.json({ error: "Failed to export" }, { status: 500 });
   }
 
-  const rows = (data ?? []).map(
-    (r) => `${r.email},${r.consent},${r.rank_at_submit},${r.created_at}`
+  const rows = (data ?? []).map((r) =>
+    [r.display_name, r.email, r.consent, r.rank_at_submit, r.created_at].map(csvCell).join(",")
   );
-  const csv = ["email,consent,rank_at_submit,created_at", ...rows].join("\n");
+  const csv = ["display_name,email,consent,rank_at_submit,created_at", ...rows].join("\n");
 
   return new NextResponse(csv, {
     headers: {

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useGameStore } from "@/store/gameStore";
 
 export function EmailScreen() {
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [honeypot, setHoneypot] = useState("");
@@ -25,7 +26,7 @@ export function EmailScreen() {
       const res = await fetch("/api/email/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionToken, email, consent, honeypot }),
+        body: JSON.stringify({ sessionToken, displayName, email, consent, honeypot }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -51,9 +52,9 @@ export function EmailScreen() {
         <p className="text-sakura-500 text-center">We&apos;ll be in touch with your prize. 🎉</p>
         <button
           onClick={() => setScreen("leaderboard")}
-          className="bg-sakura-500 text-white font-bold py-3 px-8 rounded-full mt-4"
+          className="pixel-button mt-4 px-8 py-3 text-sm"
         >
-          View Leaderboard
+          Leaderboard
         </button>
       </motion.div>
     );
@@ -86,6 +87,17 @@ export function EmailScreen() {
         />
 
         <input
+          type="text"
+          required
+          minLength={1}
+          maxLength={16}
+          placeholder="your name"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          className="border-2 border-sakura-200 rounded-xl px-4 py-3 outline-none focus:border-sakura-400 text-sakura-700"
+        />
+
+        <input
           type="email"
           required
           placeholder="your@email.com"
@@ -111,13 +123,13 @@ export function EmailScreen() {
           whileTap={{ scale: 0.95 }}
           type="submit"
           disabled={submitting || !consent}
-          className="bg-sakura-500 text-white font-bold py-3 rounded-full disabled:opacity-60"
+          className="pixel-button w-full px-4 py-3 text-sm"
         >
-          {submitting ? "Submitting…" : "Submit"}
+          {submitting ? "Submitting..." : "Submit"}
         </motion.button>
       </form>
 
-      <button onClick={() => setScreen("end")} className="text-sakura-400 text-sm underline">
+      <button onClick={() => setScreen("end")} className="pixel-button pixel-button-small">
         Back
       </button>
     </motion.div>
