@@ -133,8 +133,8 @@ export function ClaimSnackScreen() {
         <Image
           src="/assets/ui/gift-pixel-transparent.png"
           alt="Gift"
-          width={120}
-          height={120}
+          width={240}
+          height={240}
           className="h-20 w-20 object-contain"
           priority
         />
