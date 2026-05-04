@@ -6,23 +6,28 @@ import { LandingScreen } from "@/components/screens/LandingScreen";
 import { GameScreen } from "@/components/screens/GameScreen";
 import { EndScreen } from "@/components/screens/EndScreen";
 import { EmailScreen } from "@/components/screens/EmailScreen";
+import { ClaimSnackScreen } from "@/components/screens/ClaimSnackScreen";
 import { LeaderboardScreen } from "@/components/screens/LeaderboardScreen";
 
 export default function Home() {
   const screen = useGameStore((s) => s.screen);
 
   return (
-    <main className="flex justify-center items-start min-h-screen bg-gradient-to-b from-sakura-100 to-sakura-50">
+    <main className="flex min-h-dvh items-center justify-center bg-gradient-to-b from-sakura-100 to-sakura-50">
       {/* Phone-frame wrapper — fixed 400×700 logical canvas */}
       <div
         className="relative overflow-hidden bg-white shadow-2xl"
-        style={{ width: 400, minHeight: 700, maxWidth: "100vw" }}
+        style={{
+          width: "min(400px, 100vw, calc(100dvh * 400 / 700))",
+          aspectRatio: "400 / 700",
+        }}
       >
         <AnimatePresence mode="wait">
           {screen === "landing" && <LandingScreen key="landing" />}
           {screen === "game" && <GameScreen key="game" />}
           {screen === "end" && <EndScreen key="end" />}
           {screen === "email" && <EmailScreen key="email" />}
+          {screen === "claimSnack" && <ClaimSnackScreen key="claimSnack" />}
           {screen === "leaderboard" && <LeaderboardScreen key="leaderboard" />}
         </AnimatePresence>
 
