@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyToken, hashToken } from "@/lib/hmac";
+import { submitGameFormToHubSpot } from "@/lib/hubspot";
 import { createServerClient } from "@/lib/supabase/server";
 import { EmailSubmitRequestSchema } from "@/schemas/email";
 
@@ -77,6 +78,17 @@ export async function POST(req: Request) {
     }
     console.error("email insert error", insertErr);
     return NextResponse.json({ error: "Failed to save email" }, { status: 500 });
+  }
+
+  try {
+    const origin = req.headers.get("origin");
+    await submitGameFormToHubSpot({
+      displayName,
+      email,
+      pageUri: origin ? `${origin}/` : undefined,
+    });
+  } catch (error) {
+    console.error("hubspot form submit error", error);
   }
 
   return NextResponse.json({ success: true });
