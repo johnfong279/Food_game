@@ -161,6 +161,27 @@ body {
     opacity: 1;
   }
 
+  .claim-text-outline {
+    text-shadow:
+      1px 0 0 #fff7ef,
+      -1px 0 0 #fff7ef,
+      0 1px 0 #fff7ef,
+      0 -1px 0 #fff7ef,
+      1px 1px 0 #fff7ef;
+  }
+
+  .claim-text-outline-strong {
+    text-shadow:
+      1px 0 0 #fff7ef,
+      -1px 0 0 #fff7ef,
+      0 1px 0 #fff7ef,
+      0 -1px 0 #fff7ef,
+      1px 1px 0 #fff7ef,
+      -1px 1px 0 #fff7ef,
+      1px -1px 0 #fff7ef,
+      -1px -1px 0 #fff7ef;
+  }
+
 }
 
 @layer utilities {

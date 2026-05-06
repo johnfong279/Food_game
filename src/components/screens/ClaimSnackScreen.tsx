@@ -158,17 +158,20 @@ export function ClaimSnackScreen() {
               priority
             />
 
-            <div className="space-y-3 text-center">
-              <p className="text-[0.86rem] font-bold leading-relaxed text-[#4D2809]">
-                Enter your email
+            <div className="text-center">
+              <p className="claim-text-outline-strong text-[0.86rem] font-bold text-[#4D2809]">
+                <span className="inline-block leading-[1.75]">
+                  Enter your email
+                  <br />
+                  to claim your
+                </span>
+                <br className="block leading-[0.4]" />
+                <span className="mt-1 inline-block text-[1.05rem] leading-[1.15] text-sakura-600">FREE POTATO STICKS!</span>
                 <br />
-                to claim your
-                <br />
-                <br />
-                <span className="text-[1.05rem] text-sakura-600">FREE POTATO STICKS!</span>
-                <br />
-                <span className="text-[0.78rem] text-sakura-600">
-                  🎁 Top 3 players win $30 credits!
+                <span className="mt-1 inline-block text-[0.78rem] leading-[1.65] text-sakura-600">
+                  🎁 Top 3 players
+                  <br />
+                  win $30 credits!
                 </span>
               </p>
             </div>
@@ -205,15 +208,15 @@ export function ClaimSnackScreen() {
                 className="h-14 rounded-md border-2 border-sakura-200 bg-white/90 px-4 text-center text-xs font-bold text-sakura-700 outline-none placeholder:text-sakura-300 focus:border-sakura-400"
               />
 
-              <div className="flex items-start gap-2 whitespace-nowrap text-left text-[0.5rem] font-bold leading-tight text-[#4D2809]">
-                <label className="flex cursor-pointer items-start gap-2">
+              <div className="claim-text-outline flex items-center gap-2 whitespace-nowrap text-left text-[0.5rem] font-bold leading-tight text-[#4D2809]">
+                <label className="flex cursor-pointer items-center gap-2">
                   <input
                     type="checkbox"
                     required
                     aria-label="I agree to the Terms & Conditions"
                     checked={termsConsent}
                     onChange={(e) => setTermsConsent(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 shrink-0 accent-sakura-500"
+                    className="h-4 w-4 shrink-0 accent-sakura-500"
                   />
                   <span>I agree to the</span>
                 </label>
@@ -226,13 +229,13 @@ export function ClaimSnackScreen() {
                 </button>
               </div>
 
-              <label className="flex cursor-pointer items-start gap-2 whitespace-nowrap text-left text-[0.5rem] font-bold leading-tight text-[#4D2809]">
+              <label className="claim-text-outline flex cursor-pointer items-center gap-2 whitespace-nowrap text-left text-[0.5rem] font-bold leading-tight text-[#4D2809]">
                 <input
                   type="checkbox"
                   required
                   checked={marketingConsent}
                   onChange={(e) => setMarketingConsent(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-sakura-500"
+                  className="h-4 w-4 shrink-0 accent-sakura-500"
                 />
                 <span>I agree to receive marketing emails</span>
               </label>
