@@ -74,23 +74,79 @@ export function LandingScreen() {
           style={{ width: 108, height: "auto" }}
         />
 
-        <div className="absolute left-1/2 top-[35%] -translate-x-1/2 -translate-y-1/2 text-center">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, type: "spring" }}
-          >
-            <Image
-              src="/assets/branding/bloom-catcher-text.png"
-              alt="Bloom Catcher. Play the game, win free snack!"
-              width={1536}
-              height={1024}
-              priority
-              className="object-contain"
-              style={{ width: 420, maxWidth: "none", imageRendering: "pixelated" }}
-            />
-          </motion.div>
-        </div>
+        {gameClosed ? (
+          <>
+            <div className="absolute left-1/2 top-[23%] -translate-x-1/2 -translate-y-1/2 text-center">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2, type: "spring" }}
+              >
+                <Image
+                  src="/assets/branding/bloom-catcher-end-bloom.png?v=20260506-split-title"
+                  alt="Bloom"
+                  width={1536}
+                  height={310}
+                  priority
+                  className="object-contain"
+                  style={{ width: 420, maxWidth: "none", imageRendering: "pixelated" }}
+                />
+              </motion.div>
+            </div>
+            <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 text-center">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.22, type: "spring" }}
+              >
+                <Image
+                  src="/assets/branding/bloom-catcher-end-catcher.png?v=20260506-split-title"
+                  alt="Catcher"
+                  width={1536}
+                  height={340}
+                  priority
+                  className="object-contain"
+                  style={{ width: 420, maxWidth: "none", imageRendering: "pixelated" }}
+                />
+              </motion.div>
+            </div>
+            <div className="absolute left-1/2 top-[72%] -translate-x-1/2 -translate-y-1/2 text-center">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.25, type: "spring" }}
+              >
+                <Image
+                  src="/assets/branding/bloom-catcher-end-message.png?v=20260506-split"
+                  alt="The cherry blossoms have fallen. Thanks for playing. Stay tuned for the next event and more free snack rewards."
+                  width={900}
+                  height={254}
+                  priority
+                  className="object-contain"
+                  style={{ width: 300, maxWidth: "none", imageRendering: "pixelated" }}
+                />
+              </motion.div>
+            </div>
+          </>
+        ) : (
+          <div className="absolute left-1/2 top-[35%] -translate-x-1/2 -translate-y-1/2 text-center">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, type: "spring" }}
+            >
+              <Image
+                src="/assets/branding/bloom-catcher-text.png"
+                alt="Bloom Catcher. Play the game, win free snack!"
+                width={1536}
+                height={1024}
+                priority
+                className="object-contain"
+                style={{ width: 420, maxWidth: "none", imageRendering: "pixelated" }}
+              />
+            </motion.div>
+          </div>
+        )}
 
         {gameClosed ? (
           <motion.div
@@ -99,9 +155,6 @@ export function LandingScreen() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.25 }}
           >
-            <p className="text-[0.78rem] font-black leading-relaxed text-[#4D2809] [text-shadow:1px_1px_0_#fff4dc]">
-              Thank you for participation.
-            </p>
             <button
               type="button"
               onClick={() => setScreen("leaderboard")}
