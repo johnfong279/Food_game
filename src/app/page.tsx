@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useGameStore } from "@/store/gameStore";
 import { LandingScreen } from "@/components/screens/LandingScreen";
@@ -10,6 +11,14 @@ import { LeaderboardScreen } from "@/components/screens/LeaderboardScreen";
 
 export default function Home() {
   const screen = useGameStore((s) => s.screen);
+  const setScreen = useGameStore((s) => s.setScreen);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("screen") === "claimSnack") {
+      setScreen("claimSnack");
+    }
+  }, [setScreen]);
 
   return (
     <main className="flex min-h-dvh items-center justify-center bg-gradient-to-b from-sakura-100 to-sakura-50">

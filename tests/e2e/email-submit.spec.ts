@@ -36,10 +36,10 @@ test("claim snack screen has email input and consent checkbox", async ({ page })
   await expect(page.getByPlaceholder("your name")).toBeVisible();
   await expect(page.locator('input[type="email"]')).toBeVisible();
   await expect(page.getByLabel(/I agree to the Terms & Conditions/i)).toBeVisible();
-  await expect(page.getByRole("link", { name: "Terms & Conditions" })).toHaveAttribute(
-    "href",
-    "/terms"
-  );
+  await page.getByRole("button", { name: "Terms & Conditions" }).click();
+  await expect(page.getByRole("dialog", { name: "Terms & Conditions" })).toBeVisible();
+  await page.getByRole("button", { name: "Close terms modal" }).click();
+  await expect(page.getByRole("dialog", { name: "Terms & Conditions" })).toBeHidden();
   await expect(page.getByLabel(/I agree to receive marketing emails/i)).toBeVisible();
   await expect(page.getByRole("button", { name: "GET MY SNACK" })).toBeVisible();
 });

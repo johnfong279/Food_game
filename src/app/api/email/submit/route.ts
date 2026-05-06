@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { verifyToken, hashToken } from "@/lib/hmac";
 import { submitGameFormToHubSpot } from "@/lib/hubspot";
+import {
+  getEmailQualifiedLeaderboardEntries,
+  getLeaderboardRank,
+} from "@/lib/leaderboard";
 import { createServerClient } from "@/lib/supabase/server";
 import { EmailSubmitRequestSchema } from "@/schemas/email";
 
@@ -45,7 +49,7 @@ export async function POST(req: Request) {
 
   const { data: myScore } = await supabase
     .from("scores")
-    .select("score")
+    .select("score, created_at")
     .eq("session_id", session.id)
     .single();
 
@@ -53,12 +57,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No score found for session" }, { status: 400 });
   }
 
-  const { count: aboveCount } = await supabase
-    .from("scores")
-    .select("id", { count: "exact", head: true })
-    .gt("score", myScore.score);
+  const { entries: existingQualifiedEntries, error: leaderboardError } =
+    await getEmailQualifiedLeaderboardEntries(supabase);
 
-  const rank = (aboveCount ?? 0) + 1;
+  if (leaderboardError) {
+    return NextResponse.json({ error: "Failed to calculate rank" }, { status: 500 });
+  }
+
+  const rank =
+    getLeaderboardRank(
+      [
+        ...existingQualifiedEntries.filter((entry) => entry.sessionId !== session.id),
+        {
+          sessionId: session.id,
+          name: displayName,
+          score: myScore.score,
+          createdAt: myScore.created_at,
+        },
+      ],
+      session.id
+    ) ?? 1;
 
   const { error: insertErr } = await supabase.from("emails").insert({
     session_id: session.id,

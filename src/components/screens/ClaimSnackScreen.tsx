@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import { TermsContent } from "@/components/TermsContent";
 import { ValidEmailScreen } from "@/components/screens/ValidEmailScreen";
 import { useGameStore } from "@/store/gameStore";
 
@@ -17,6 +17,7 @@ export function ClaimSnackScreen() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [modalMessage, setModalMessage] = useState<string | null>(null);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
 
   const sessionToken = useGameStore((s) => s.sessionToken);
   const discountCode = useGameStore((s) => s.discountCode) ?? "SAKURA2026";
@@ -24,6 +25,11 @@ export function ClaimSnackScreen() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!sessionToken) {
+      setError("Game session missing. Please play again before claiming your snack.");
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
     try {
@@ -101,6 +107,36 @@ export function ClaimSnackScreen() {
         </div>
       )}
 
+      {termsModalOpen && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#4D2809]/45 px-5 py-6">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="terms-modal-title"
+            className="relative flex h-full max-h-[620px] w-full max-w-[350px] flex-col rounded-lg border-2 border-sakura-300 bg-white/95 text-left text-[#4D2809] shadow-xl"
+          >
+            <button
+              type="button"
+              aria-label="Close terms modal"
+              onClick={() => setTermsModalOpen(false)}
+              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-sakura-300 bg-white p-0 text-lg font-black leading-none text-sakura-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-sakura-300"
+              style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
+            >
+              X
+            </button>
+            <div
+              className="overflow-y-auto px-5 pb-5 pt-14 text-[0.72rem] leading-relaxed"
+              style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
+            >
+              <div id="terms-modal-title" className="sr-only">
+                Terms &amp; Conditions
+              </div>
+              <TermsContent />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div
         className={`mt-2 flex flex-1 flex-col items-center gap-4 ${
           submitted ? "justify-center" : "justify-start"
@@ -169,26 +205,26 @@ export function ClaimSnackScreen() {
                 className="h-14 rounded-md border-2 border-sakura-200 bg-white/90 px-4 text-center text-xs font-bold text-sakura-700 outline-none placeholder:text-sakura-300 focus:border-sakura-400"
               />
 
-              <label className="flex cursor-pointer items-start gap-2 whitespace-nowrap text-left text-[0.5rem] font-bold leading-tight text-[#4D2809]">
-                <input
-                  type="checkbox"
-                  required
-                  checked={termsConsent}
-                  onChange={(e) => setTermsConsent(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-sakura-500"
-                />
-                <span>
-                  I agree to the{" "}
-                  <Link
-                    href="/terms"
-                    className="text-sakura-600 underline underline-offset-2"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Terms &amp; Conditions
-                  </Link>
-                </span>
-              </label>
+              <div className="flex items-start gap-2 whitespace-nowrap text-left text-[0.5rem] font-bold leading-tight text-[#4D2809]">
+                <label className="flex cursor-pointer items-start gap-2">
+                  <input
+                    type="checkbox"
+                    required
+                    aria-label="I agree to the Terms & Conditions"
+                    checked={termsConsent}
+                    onChange={(e) => setTermsConsent(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-sakura-500"
+                  />
+                  <span>I agree to the</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setTermsModalOpen(true)}
+                  className="font-bold text-sakura-600 underline underline-offset-2"
+                >
+                  Terms &amp; Conditions
+                </button>
+              </div>
 
               <label className="flex cursor-pointer items-start gap-2 whitespace-nowrap text-left text-[0.5rem] font-bold leading-tight text-[#4D2809]">
                 <input
