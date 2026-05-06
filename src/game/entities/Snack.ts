@@ -109,8 +109,8 @@ export class Snack implements Entity {
     this.offScreen = false;
   }
 
-  update(dt: number, canvasHeight: number) {
-    this.y += this.vy * dt * 60;
+  update(dt: number, canvasHeight: number, speedMultiplier = 1) {
+    this.y += this.vy * dt * 60 * speedMultiplier;
     if (this.y > canvasHeight + 50) this.offScreen = true;
   }
 

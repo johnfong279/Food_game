@@ -5,7 +5,6 @@ import { useGameStore } from "@/store/gameStore";
 import { LandingScreen } from "@/components/screens/LandingScreen";
 import { GameScreen } from "@/components/screens/GameScreen";
 import { EndScreen } from "@/components/screens/EndScreen";
-import { EmailScreen } from "@/components/screens/EmailScreen";
 import { ClaimSnackScreen } from "@/components/screens/ClaimSnackScreen";
 import { LeaderboardScreen } from "@/components/screens/LeaderboardScreen";
 
@@ -26,7 +25,6 @@ export default function Home() {
           {screen === "landing" && <LandingScreen key="landing" />}
           {screen === "game" && <GameScreen key="game" />}
           {screen === "end" && <EndScreen key="end" />}
-          {screen === "email" && <EmailScreen key="email" />}
           {screen === "claimSnack" && <ClaimSnackScreen key="claimSnack" />}
           {screen === "leaderboard" && <LeaderboardScreen key="leaderboard" />}
         </AnimatePresence>

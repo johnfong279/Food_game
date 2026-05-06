@@ -30,12 +30,17 @@ async function completeRoundAndOpenClaim(page: import("@playwright/test").Page) 
 test("claim snack screen has email input and consent checkbox", async ({ page }) => {
   await completeRoundAndOpenClaim(page);
 
-  await expect(page.getByRole("heading", { name: "YOU'RE IN!" })).toBeVisible();
   await expect(page.getByText("Enter your email")).toBeVisible();
-  await expect(page.getByText("FREE SNACK!")).toBeVisible();
+  await expect(page.getByText("FREE POTATO STICKS!")).toBeVisible();
+  await expect(page.getByText("🎁 Top 3 players win $30 credits!")).toBeVisible();
   await expect(page.getByPlaceholder("your name")).toBeVisible();
   await expect(page.locator('input[type="email"]')).toBeVisible();
-  await expect(page.locator('input[type="checkbox"]')).toBeVisible();
+  await expect(page.getByLabel(/I agree to the Terms & Conditions/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Terms & Conditions" })).toHaveAttribute(
+    "href",
+    "/terms"
+  );
+  await expect(page.getByLabel(/I agree to receive marketing emails/i)).toBeVisible();
   await expect(page.getByRole("button", { name: "GET MY SNACK" })).toBeVisible();
 });
 
@@ -55,7 +60,8 @@ test("successful claim shows promo code, copy button, and leaderboard button", a
   await completeRoundAndOpenClaim(page);
   await page.getByPlaceholder("your name").fill("Snack Player");
   await page.locator('input[type="email"]').fill("player@example.com");
-  await page.locator('input[type="checkbox"]').check();
+  await page.getByLabel(/I agree to the Terms & Conditions/i).check();
+  await page.getByLabel(/I agree to receive marketing emails/i).check();
   await page.getByRole("button", { name: "GET MY SNACK" }).click();
 
   await expect(page.getByText("TESTSNACK")).toBeVisible();
@@ -77,7 +83,8 @@ test("failed claim shows error and keeps submit button available", async ({ page
   await completeRoundAndOpenClaim(page);
   await page.getByPlaceholder("your name").fill("Snack Player");
   await page.locator('input[type="email"]').fill("player@example.com");
-  await page.locator('input[type="checkbox"]').check();
+  await page.getByLabel(/I agree to the Terms & Conditions/i).check();
+  await page.getByLabel(/I agree to receive marketing emails/i).check();
   await page.getByRole("button", { name: "GET MY SNACK" }).click();
 
   await expect(page.getByRole("alert").filter({ hasText: "Email check failed" })).toBeVisible();
@@ -96,7 +103,8 @@ test("duplicate email shows one-time-use modal", async ({ page }) => {
   await completeRoundAndOpenClaim(page);
   await page.getByPlaceholder("your name").fill("Snack Player");
   await page.locator('input[type="email"]').fill("player@example.com");
-  await page.locator('input[type="checkbox"]').check();
+  await page.getByLabel(/I agree to the Terms & Conditions/i).check();
+  await page.getByLabel(/I agree to receive marketing emails/i).check();
   await page.getByRole("button", { name: "GET MY SNACK" }).click();
 
   await expect(page.getByRole("dialog", { name: "Email already used" })).toBeVisible();

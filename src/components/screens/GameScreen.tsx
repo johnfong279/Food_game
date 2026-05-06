@@ -9,7 +9,7 @@ export function GameScreen() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
   const [displayScore, setDisplayScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [timeLeft, setTimeLeft] = useState(35);
 
   const sessionToken = useGameStore((s) => s.sessionToken);
   const score = useGameStore((s) => s.score);

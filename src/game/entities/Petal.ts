@@ -48,10 +48,10 @@ export class Petal implements Entity {
     this.frameOffset = Math.floor(Math.random() * Petal.SPRITE_FRAME_COUNT);
   }
 
-  update(dt: number, canvasHeight: number) {
+  update(dt: number, canvasHeight: number, speedMultiplier = 1) {
     this.x += this.vx * dt * 60;
-    this.y += this.vy * dt * 60;
-    this.rotation += this.rotationSpeed * dt * 60;
+    this.y += this.vy * dt * 60 * speedMultiplier;
+    this.rotation += this.rotationSpeed * dt * 60 * speedMultiplier;
     this.animationTime += dt;
     if (this.y > canvasHeight + 30) this.offScreen = true;
   }

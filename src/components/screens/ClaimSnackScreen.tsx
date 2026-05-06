@@ -3,18 +3,20 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
+import { ValidEmailScreen } from "@/components/screens/ValidEmailScreen";
 import { useGameStore } from "@/store/gameStore";
 
 export function ClaimSnackScreen() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
-  const [consent, setConsent] = useState(false);
+  const [termsConsent, setTermsConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [honeypot, setHoneypot] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [modalMessage, setModalMessage] = useState<string | null>(null);
-  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   const sessionToken = useGameStore((s) => s.sessionToken);
   const discountCode = useGameStore((s) => s.discountCode) ?? "SAKURA2026";
@@ -28,7 +30,13 @@ export function ClaimSnackScreen() {
       const res = await fetch("/api/email/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionToken, displayName, email, consent, honeypot }),
+        body: JSON.stringify({
+          sessionToken,
+          displayName,
+          email,
+          consent: marketingConsent,
+          honeypot,
+        }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => null);
@@ -47,45 +55,9 @@ export function ClaimSnackScreen() {
     }
   }
 
-  async function handleCopy() {
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(discountCode);
-      } else {
-        copyWithTextArea(discountCode);
-      }
-      setCopyStatus("copied");
-    } catch {
-      try {
-        copyWithTextArea(discountCode);
-        setCopyStatus("copied");
-      } catch {
-        setCopyStatus("failed");
-      }
-    }
-  }
-
-  function copyWithTextArea(value: string) {
-    const textarea = document.createElement("textarea");
-    textarea.value = value;
-    textarea.setAttribute("readonly", "");
-    textarea.style.position = "fixed";
-    textarea.style.left = "-9999px";
-    textarea.style.top = "0";
-    document.body.appendChild(textarea);
-    textarea.select();
-
-    const copied = document.execCommand("copy");
-    document.body.removeChild(textarea);
-
-    if (!copied) {
-      throw new Error("Copy command failed");
-    }
-  }
-
   return (
     <motion.div
-      className="relative flex h-full w-full flex-col items-center overflow-hidden px-8 py-10 text-center"
+      className="relative flex h-full w-full flex-col items-center overflow-hidden px-8 py-6 text-center"
       style={{
         backgroundImage: "url('/assets/backgrounds/end-screen.png')",
         backgroundPosition: "center",
@@ -129,45 +101,54 @@ export function ClaimSnackScreen() {
         </div>
       )}
 
-      <div className="mt-10 flex flex-1 flex-col items-center justify-center gap-5">
-        <Image
-          src="/assets/ui/gift-pixel-transparent.png"
-          alt="Gift"
-          width={240}
-          height={240}
-          className="h-20 w-20 object-contain"
-          priority
-        />
-
-        {!submitted && (
-          <div className="space-y-3">
-            <h2 className="text-[1.42rem] font-black leading-tight text-sakura-600 [text-shadow:2px_2px_0_#ffd3dd]">
-              YOU&apos;RE IN!
-            </h2>
-            <p className="text-[0.86rem] font-bold leading-relaxed text-[#4D2809]">
-              Enter your email
-              <br />
-              to get your
-              <br />
-              <span className="text-[1.05rem] text-sakura-600">FREE SNACK!</span>
-            </p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="flex w-full max-w-[260px] flex-col gap-4">
-          <input
-            type="text"
-            name="website"
-            tabIndex={-1}
-            autoComplete="off"
-            aria-hidden="true"
-            value={honeypot}
-            onChange={(e) => setHoneypot(e.target.value)}
-            className="hidden"
+      <div
+        className={`mt-2 flex flex-1 flex-col items-center gap-4 ${
+          submitted ? "justify-center" : "justify-start"
+        }`}
+      >
+        {submitted ? (
+          <ValidEmailScreen
+            discountCode={discountCode}
+            onLeaderboard={() => setScreen("leaderboard")}
           />
+        ) : (
+          <>
+            <Image
+              src="/assets/ui/gift-pixel-transparent.png"
+              alt="Gift"
+              width={240}
+              height={240}
+              className="h-36 w-36 object-contain"
+              priority
+            />
 
-          {!submitted && (
-            <>
+            <div className="space-y-3 text-center">
+              <p className="text-[0.86rem] font-bold leading-relaxed text-[#4D2809]">
+                Enter your email
+                <br />
+                to claim your
+                <br />
+                <br />
+                <span className="text-[1.05rem] text-sakura-600">FREE POTATO STICKS!</span>
+                <br />
+                <span className="text-[0.78rem] text-sakura-600">
+                  🎁 Top 3 players win $30 credits!
+                </span>
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex w-full max-w-[310px] flex-col gap-4">
+              <input
+                type="text"
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                className="hidden"
+              />
+
               <input
                 type="text"
                 required
@@ -188,56 +169,49 @@ export function ClaimSnackScreen() {
                 className="h-14 rounded-md border-2 border-sakura-200 bg-white/90 px-4 text-center text-xs font-bold text-sakura-700 outline-none placeholder:text-sakura-300 focus:border-sakura-400"
               />
 
-              <label className="flex cursor-pointer items-start gap-3 text-left text-[0.68rem] font-bold leading-relaxed text-[#4D2809]">
+              <label className="flex cursor-pointer items-start gap-2 whitespace-nowrap text-left text-[0.5rem] font-bold leading-tight text-[#4D2809]">
                 <input
                   type="checkbox"
                   required
-                  checked={consent}
-                  onChange={(e) => setConsent(e.target.checked)}
+                  checked={termsConsent}
+                  onChange={(e) => setTermsConsent(e.target.checked)}
                   className="mt-0.5 h-4 w-4 shrink-0 accent-sakura-500"
                 />
-                <span>I agree to receive updates from Bloom Catcher</span>
+                <span>
+                  I agree to the{" "}
+                  <Link
+                    href="/terms"
+                    className="text-sakura-600 underline underline-offset-2"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Terms &amp; Conditions
+                  </Link>
+                </span>
               </label>
-            </>
-          )}
 
-          {submitted ? (
-            <div className="flex flex-col gap-3">
-              <div className="rounded-lg border-2 border-dashed border-sakura-300 bg-white/85 px-6 py-5">
-                <p className="text-[0.75rem] font-bold uppercase leading-none text-[#4D2809]">
-                  Promo code
-                </p>
-                <p className="mt-3 break-all text-xl font-black text-sakura-600">{discountCode}</p>
-              </div>
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="pixel-button w-full px-4 py-3 text-sm"
+              <label className="flex cursor-pointer items-start gap-2 whitespace-nowrap text-left text-[0.5rem] font-bold leading-tight text-[#4D2809]">
+                <input
+                  type="checkbox"
+                  required
+                  checked={marketingConsent}
+                  onChange={(e) => setMarketingConsent(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-sakura-500"
+                />
+                <span>I agree to receive marketing emails</span>
+              </label>
+
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                disabled={submitting}
+                className="pixel-button w-full px-4 py-4 text-sm"
               >
-                {copyStatus === "copied" ? "Copied" : "Copy"}
-              </button>
-              {copyStatus === "failed" && (
-                <p className="text-[0.75rem] font-bold text-red-600">Copy failed</p>
-              )}
-              <button
-                type="button"
-                onClick={() => setScreen("leaderboard")}
-                className="pixel-button w-full px-5 py-4 text-base"
-              >
-                Leaderboard
-              </button>
-            </div>
-          ) : (
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              type="submit"
-              disabled={submitting}
-              className="pixel-button w-full px-4 py-4 text-sm"
-            >
-              {submitting ? "Checking..." : "GET MY SNACK"}
-            </motion.button>
-          )}
-        </form>
+                {submitting ? "Checking..." : "GET MY SNACK"}
+              </motion.button>
+            </form>
+          </>
+        )}
       </div>
     </motion.div>
   );

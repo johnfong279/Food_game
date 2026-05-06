@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { GameEvent } from "@/game/GameEngine";
 
-export type Screen = "landing" | "game" | "end" | "email" | "claimSnack" | "leaderboard";
+export type Screen = "landing" | "game" | "end" | "claimSnack" | "leaderboard";
 
 interface GameState {
   screen: Screen;

@@ -43,3 +43,10 @@ venv/
 
 # local generated artifacts
 /tmp/
+
+# local secrets notes
+.secrets.local.md
+
+# admin exports (contain PII)
+/emails.csv
+/emails*.csv

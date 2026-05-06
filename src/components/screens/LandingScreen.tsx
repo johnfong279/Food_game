@@ -1,22 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import { GAME_CLOSES_AT_MS, isGameClosed } from "@/lib/contest";
 import { useGameStore } from "@/store/gameStore";
 
 export function LandingScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [gameClosed, setGameClosed] = useState(() => isGameClosed());
   const setScreen = useGameStore((s) => s.setScreen);
   const setSessionToken = useGameStore((s) => s.setSessionToken);
 
+  useEffect(() => {
+    if (gameClosed) return;
+
+    const msUntilClose = GAME_CLOSES_AT_MS - Date.now();
+    if (msUntilClose <= 0) {
+      setGameClosed(true);
+      return;
+    }
+
+    const timeout = window.setTimeout(() => setGameClosed(true), msUntilClose);
+    return () => window.clearTimeout(timeout);
+  }, [gameClosed]);
+
   async function handleStart() {
+    if (isGameClosed()) {
+      setGameClosed(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/session/start", { method: "POST" });
+      if (res.status === 403) {
+        setGameClosed(true);
+        return;
+      }
       if (!res.ok) throw new Error("Failed to start session");
       const { sessionToken } = await res.json();
       setSessionToken(sessionToken);
@@ -41,6 +64,16 @@ export function LandingScreen() {
       exit={{ opacity: 0 }}
     >
       <div className="z-10 absolute inset-0">
+        <Image
+          src="/assets/branding/Applewood logo.png"
+          alt="Applewood"
+          width={970}
+          height={600}
+          priority
+          className="absolute left-1/2 top-6 -translate-x-1/2 object-contain"
+          style={{ width: 108, height: "auto" }}
+        />
+
         <div className="absolute left-1/2 top-[35%] -translate-x-1/2 -translate-y-1/2 text-center">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
@@ -59,31 +92,56 @@ export function LandingScreen() {
           </motion.div>
         </div>
 
-        {error && (
+        {gameClosed ? (
+          <motion.div
+            className="absolute left-1/2 top-[90%] flex w-[300px] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-7 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.25 }}
+          >
+            <p className="text-[0.78rem] font-black leading-relaxed text-[#4D2809] [text-shadow:1px_1px_0_#fff4dc]">
+              Thank you for participation.
+            </p>
+            <button
+              type="button"
+              onClick={() => setScreen("leaderboard")}
+              className="pixel-button pixel-button-secondary w-[208px] px-3 py-3 text-[0.68rem] whitespace-nowrap"
+            >
+              Leaderboard
+            </button>
+          </motion.div>
+        ) : error ? (
           <p className="absolute left-1/2 top-[55%] w-72 -translate-x-1/2 text-center text-sm font-semibold text-red-500">
             {error}
           </p>
+        ) : null}
+
+        {!gameClosed && (
+          <Image
+            src="/assets/branding/shiny potato pack.png"
+            alt="Shiny Potato Pack"
+            width={1396}
+            height={1127}
+            priority
+            className="absolute left-1/2 top-[64%] -translate-x-1/2 -translate-y-1/2 object-contain"
+            style={{ width: 188, height: "auto" }}
+          />
         )}
 
-        <div className="absolute left-1/2 top-[84%] -translate-x-1/2 -translate-y-1/2">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={handleStart}
-            disabled={loading}
-            aria-busy={loading}
-            aria-label={loading ? "Starting game" : "Start game"}
-            className="start-image-button"
-          >
-            <span className="sr-only">{loading ? "Starting game" : "Start game"}</span>
-          </motion.button>
-        </div>
-
-        <Link
-          href="/terms"
-          className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-white/85 px-4 py-2 text-[0.55rem] font-semibold uppercase tracking-normal text-sakura-600 shadow-md transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sakura-300"
-        >
-          T&amp;C
-        </Link>
+        {!gameClosed && (
+          <div className="absolute left-1/2 top-[84%] -translate-x-1/2 -translate-y-1/2">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleStart}
+              disabled={loading}
+              aria-busy={loading}
+              aria-label={loading ? "Starting game" : "Start game"}
+              className="start-image-button"
+            >
+              <span className="sr-only">{loading ? "Starting game" : "Start game"}</span>
+            </motion.button>
+          </div>
+        )}
       </div>
     </motion.div>
   );

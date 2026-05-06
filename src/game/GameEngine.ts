@@ -19,7 +19,8 @@ export interface GameCallbacks {
 
 const LOGICAL_WIDTH = 400;
 const LOGICAL_HEIGHT = 700;
-const GAME_DURATION_MS = 30_000;
+const GAME_DURATION_MS = 35_000;
+const MAX_SPEED_MULTIPLIER = 2;
 const BASKET_WIDTH = 96;
 const BASKET_HEIGHT = 42;
 const BASKET_Y = LOGICAL_HEIGHT - 58;
@@ -39,6 +40,11 @@ const SCORE_POPUP_SIZE: Record<number, { src: string; width: number; height: num
   20: { src: "/assets/game/score-popups/plus-20.png", width: 64, height: 46 },
   50: { src: "/assets/game/score-popups/plus-50.png", width: 64, height: 46 },
 };
+
+export function getSpeedMultiplier(elapsedMs: number) {
+  const progress = Math.min(1, Math.max(0, elapsedMs / GAME_DURATION_MS));
+  return 1 + (MAX_SPEED_MULTIPLIER - 1) * progress;
+}
 
 interface ScorePopup {
   x: number;
@@ -187,13 +193,18 @@ export class GameEngine {
     );
   }
 
-  private update(dt: number) {
-    const { petals: newPetals, snacks: newSnacks } = this.spawner.update(dt, LOGICAL_WIDTH);
+  private update(dt: number, progress: number, elapsedMs: number) {
+    const speedMultiplier = getSpeedMultiplier(elapsedMs);
+    const { petals: newPetals, snacks: newSnacks } = this.spawner.update(
+      dt,
+      LOGICAL_WIDTH,
+      progress,
+    );
     this.petals.push(...newPetals);
     this.snacks.push(...newSnacks);
 
-    for (const p of this.petals) p.update(dt, LOGICAL_HEIGHT);
-    for (const s of this.snacks) s.update(dt, LOGICAL_HEIGHT);
+    for (const p of this.petals) p.update(dt, LOGICAL_HEIGHT, speedMultiplier);
+    for (const s of this.snacks) s.update(dt, LOGICAL_HEIGHT, speedMultiplier);
     for (const popup of this.scorePopups) popup.age += dt;
     this.basketFrameAge += dt;
 
@@ -319,7 +330,8 @@ export class GameEngine {
     const dt = this.lastTime !== null ? (timestamp - this.lastTime) / 1000 : 0;
     this.lastTime = timestamp;
 
-    this.update(dt);
+    const progress = Math.min(1, elapsed / GAME_DURATION_MS);
+    this.update(dt, progress, elapsed);
     this.render();
 
     this.rafId = requestAnimationFrame((ts) => this.loop(ts));

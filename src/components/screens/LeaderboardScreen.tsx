@@ -38,9 +38,15 @@ export function LeaderboardScreen() {
       exit={{ opacity: 0 }}
     >
       <div className="flex h-[20%] w-full flex-col items-center justify-end pb-1">
-        <div className="relative flex h-[72px] w-[310px] items-center justify-center bg-[url('/assets/ui/decorations/ribbon.png')] bg-contain bg-center bg-no-repeat text-lg font-black uppercase text-white [text-shadow:2px_2px_0_#9b2b3d]">
+        <h1
+          className="relative flex h-[58px] w-[300px] items-center justify-center bg-center bg-no-repeat text-sm font-black uppercase leading-none text-[#4D2809] whitespace-nowrap"
+          style={{
+            backgroundImage: "url('/assets/ui/title-box-transparent.png')",
+            backgroundSize: "100% 100%",
+          }}
+        >
           Leaderboard
-        </div>
+        </h1>
       </div>
 
       <p className="text-[0.72rem] font-bold text-[#4D2809]">Live Ranking</p>
@@ -91,7 +97,7 @@ export function LeaderboardScreen() {
         href="https://applewood-signature.com/"
         target="_blank"
         rel="noopener noreferrer"
-        className="pixel-button pixel-button-secondary absolute bottom-2 w-[208px] px-3 py-3 text-[0.68rem] whitespace-nowrap"
+        className="pixel-button pixel-button-secondary absolute bottom-6 w-[208px] px-3 py-3 text-[0.68rem] whitespace-nowrap"
       >
         Get my snack
       </a>

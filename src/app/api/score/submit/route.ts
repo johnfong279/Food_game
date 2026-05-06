@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyToken, hashToken } from "@/lib/hmac";
 import { rateLimit } from "@/lib/rateLimit";
+import { isGameClosed } from "@/lib/contest";
 import { createServerClient } from "@/lib/supabase/server";
 import { ScoreSubmitRequestSchema } from "@/schemas/score";
 
@@ -10,6 +11,10 @@ const MAX_POINTS_PER_SECOND = 50;
 const SESSION_LIFETIME_MS = 90_000;
 
 export async function POST(req: Request) {
+  if (isGameClosed()) {
+    return NextResponse.json({ error: "Game closed" }, { status: 403 });
+  }
+
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
   const { allowed } = await rateLimit(`score:${ip}`, 5, 60);
   if (!allowed) {
