@@ -7,7 +7,7 @@ import { ScoreSubmitRequestSchema } from "@/schemas/score";
 
 export const runtime = "nodejs";
 
-const MAX_POINTS_PER_SECOND = 50;
+const MAX_POINTS_PER_SECOND = 125;
 const SESSION_LIFETIME_MS = 90_000;
 
 export async function POST(req: Request) {

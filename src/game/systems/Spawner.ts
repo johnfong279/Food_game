@@ -3,6 +3,7 @@ import { Snack } from "../entities/Snack";
 
 const lerp = (start: number, end: number, progress: number) => start + (end - start) * progress;
 const FINAL_REWARD_WINDOW_PROGRESS = 25 / 35;
+const REWARD_INTERVAL_MULTIPLIER = 1 / 3;
 const FINAL_REWARD_INTERVAL_MULTIPLIER = 0.5;
 
 export class Spawner {
@@ -26,7 +27,7 @@ export class Spawner {
     const endWeightedProgress = progress * progress;
     const min = lerp(2600, 850, endWeightedProgress);
     const range = lerp(900, 500, endWeightedProgress);
-    const interval = min + Math.random() * range;
+    const interval = (min + Math.random() * range) * REWARD_INTERVAL_MULTIPLIER;
     return progress >= FINAL_REWARD_WINDOW_PROGRESS
       ? interval * FINAL_REWARD_INTERVAL_MULTIPLIER
       : interval;

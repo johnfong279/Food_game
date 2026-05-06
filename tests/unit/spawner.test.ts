@@ -16,14 +16,14 @@ describe("Spawner", () => {
     expect(petals).toBeGreaterThanOrEqual(1);
   });
 
-  it("spawns petals but not snacks within 2s", () => {
+  it("spawns rewards within 2s", () => {
     const spawner = new Spawner();
     let snacks = 0;
     for (let i = 0; i < 200; i++) {
       const { snacks: s } = spawner.update(0.01, 400);
       snacks += s.length;
     }
-    expect(snacks).toBe(0);
+    expect(snacks).toBeGreaterThanOrEqual(1);
   });
 
   it("spawns bonus snacks more frequently late in the round", () => {
@@ -40,7 +40,7 @@ describe("Spawner", () => {
     expect(lateSnacks).toBeGreaterThan(earlySnacks);
   });
 
-  it("doubles reward spawn frequency in the final 10 seconds", () => {
+  it("triples reward spawn frequency and doubles it again in the final 10 seconds", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
     const spawner = new Spawner();
     let snacks = 0;
@@ -49,7 +49,7 @@ describe("Spawner", () => {
       snacks += spawner.update(0.01, 400, 1).snacks.length;
     }
 
-    expect(snacks).toBe(18);
+    expect(snacks).toBe(61);
   });
 
   it("resets counters on reset()", () => {

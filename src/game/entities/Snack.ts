@@ -77,7 +77,20 @@ const SNACK_CONFIGS: Record<SnackVariant, SnackConfig> = {
   },
 };
 
-const VARIANTS = Object.keys(SNACK_CONFIGS) as SnackVariant[];
+const VARIANTS: SnackVariant[] = [
+  "okraCrisp",
+  "potatoStick",
+  "purpleOnionCrisp",
+  "shiitakeMushroom",
+  "okraCrisp",
+  "potatoStick",
+  "purpleOnionCrisp",
+  "shiitakeMushroom",
+  "okraPack",
+  "potatoPack",
+  "purpleOnionPack",
+  "shiitakeMushroomPack",
+];
 
 export class Snack implements Entity {
   private static readonly imageCache = new Map<string, HTMLImageElement>();
