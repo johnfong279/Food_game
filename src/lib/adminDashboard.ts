@@ -27,15 +27,65 @@ export interface AdminDateRange {
   toIsoExclusive: string;
 }
 
+const ADMIN_TIME_ZONE = "America/Toronto";
+
 export function formatDateInput(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
+function formatDateInTimeZone(date: Date, timeZone = ADMIN_TIME_ZONE) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function getTimeZoneOffsetMs(date: Date, timeZone = ADMIN_TIME_ZONE) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const asUtc = Date.UTC(
+    Number(values.year),
+    Number(values.month) - 1,
+    Number(values.day),
+    Number(values.hour),
+    Number(values.minute),
+    Number(values.second)
+  );
+
+  return asUtc - date.getTime();
+}
+
+function zonedDateStartToUtc(dateInput: string, timeZone = ADMIN_TIME_ZONE) {
+  const utcMidnight = new Date(`${dateInput}T00:00:00.000Z`);
+  const firstPass = new Date(utcMidnight.getTime() - getTimeZoneOffsetMs(utcMidnight, timeZone));
+  return new Date(utcMidnight.getTime() - getTimeZoneOffsetMs(firstPass, timeZone));
+}
+
+function addDays(dateInput: string, days: number) {
+  const date = new Date(`${dateInput}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return formatDateInput(date);
+}
+
 export function getDefaultAdminDateRange(now = new Date()): AdminDateRange {
-  const to = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const from = new Date(to);
-  from.setUTCDate(to.getUTCDate() - 6);
-  return buildDateRange(formatDateInput(from), formatDateInput(to));
+  const to = formatDateInTimeZone(now);
+  const from = addDays(to, -6);
+  return buildDateRange(from, to);
 }
 
 export function buildDateRange(from: string, to: string): AdminDateRange {
@@ -43,8 +93,8 @@ export function buildDateRange(from: string, to: string): AdminDateRange {
     throw new Error("Dates must use YYYY-MM-DD format");
   }
 
-  const fromDate = new Date(`${from}T00:00:00.000Z`);
-  const toDate = new Date(`${to}T00:00:00.000Z`);
+  const fromDate = zonedDateStartToUtc(from);
+  const toDate = zonedDateStartToUtc(to);
 
   if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
     throw new Error("Invalid date range");
@@ -54,8 +104,7 @@ export function buildDateRange(from: string, to: string): AdminDateRange {
     throw new Error("From date must be before or equal to to date");
   }
 
-  const toExclusive = new Date(toDate);
-  toExclusive.setUTCDate(toExclusive.getUTCDate() + 1);
+  const toExclusive = zonedDateStartToUtc(addDays(to, 1));
 
   return {
     from,

@@ -20,6 +20,18 @@ function compactMetadata(metadata: Record<string, unknown>) {
   return text.length > 80 ? `${text.slice(0, 77)}...` : text;
 }
 
+function formatTorontoDateTime(value: string) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Toronto",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(new Date(value));
+}
+
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   const params = new URLSearchParams();
   if (searchParams?.from) params.set("from", searchParams.from);
@@ -47,7 +59,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <div>
             <h1 className="text-2xl font-black text-sakura-700">Admin Dashboard</h1>
             <p className="mt-2 text-sm font-semibold text-sakura-500">
-              Leaderboard and website behavior analytics.
+              Leaderboard and website behavior analytics. Dates use Toronto time.
             </p>
           </div>
 
@@ -130,7 +142,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                       <td className="py-3 font-bold">{entry.rank}</td>
                       <td>{entry.name}</td>
                       <td>{entry.score}</td>
-                      <td>{new Date(entry.emailSubmittedAt).toLocaleString()}</td>
+                      <td>{formatTorontoDateTime(entry.emailSubmittedAt)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -192,7 +204,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   <tr><td className="py-5 text-sakura-500" colSpan={5}>No recent events in this range.</td></tr>
                 ) : data.recentEvents.map((event) => (
                   <tr key={`${event.createdAt}-${event.eventName}-${event.sessionId ?? "anon"}`}>
-                    <td className="py-3">{new Date(event.createdAt).toLocaleString()}</td>
+                    <td className="py-3">{formatTorontoDateTime(event.createdAt)}</td>
                     <td className="font-bold">{event.eventName}</td>
                     <td>{event.eventType}</td>
                     <td className="max-w-[160px] truncate">{event.sessionId ?? "anonymous"}</td>

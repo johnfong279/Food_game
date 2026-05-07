@@ -9,8 +9,8 @@ describe("admin dashboard date ranges", () => {
   it("builds an inclusive date range with an exclusive next-day end", () => {
     const range = buildDateRange("2026-05-01", "2026-05-06");
 
-    expect(range.fromIso).toBe("2026-05-01T00:00:00.000Z");
-    expect(range.toIsoExclusive).toBe("2026-05-07T00:00:00.000Z");
+    expect(range.fromIso).toBe("2026-05-01T04:00:00.000Z");
+    expect(range.toIsoExclusive).toBe("2026-05-07T04:00:00.000Z");
   });
 
   it("rejects invalid date format", () => {
