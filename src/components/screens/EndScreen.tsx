@@ -1,13 +1,20 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import { useGameStore } from "@/store/gameStore";
 
 export function EndScreen() {
   const score = useGameStore((s) => s.score);
   const discountCode = useGameStore((s) => s.discountCode);
+  const sessionToken = useGameStore((s) => s.sessionToken);
   const setScreen = useGameStore((s) => s.setScreen);
+
+  useEffect(() => {
+    trackAnalyticsEvent("end_view", "screen_view", { sessionToken });
+  }, [sessionToken]);
 
   return (
     <motion.div
@@ -60,7 +67,10 @@ export function EndScreen() {
       <div className="mt-5 flex w-full max-w-[260px] flex-col">
         <motion.button
           whileTap={{ scale: 0.95 }}
-          onClick={() => setScreen("claimSnack")}
+          onClick={() => {
+            trackAnalyticsEvent("claim_snack_click", "button_click", { sessionToken });
+            setScreen("claimSnack");
+          }}
           className="pixel-button pixel-button-secondary w-full whitespace-nowrap px-4 py-4 text-xs"
         >
           Claim my snack

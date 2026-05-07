@@ -1,7 +1,24 @@
 import { test, expect } from "@playwright/test";
 
-async function completeRoundAndOpenClaim(page: import("@playwright/test").Page) {
+type AnalyticsEvent = {
+  eventName?: string;
+  eventType?: string;
+};
+
+async function completeRoundAndOpenClaim(
+  page: import("@playwright/test").Page,
+  analyticsEvents: AnalyticsEvent[] = []
+) {
   await page.setViewportSize({ width: 400, height: 700 });
+
+  await page.route("**/api/analytics/track", async (route) => {
+    analyticsEvents.push(route.request().postDataJSON() as AnalyticsEvent);
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ success: true }),
+    });
+  });
 
   await page.route("**/api/session/start", async (route) => {
     await route.fulfill({
@@ -28,11 +45,13 @@ async function completeRoundAndOpenClaim(page: import("@playwright/test").Page) 
 }
 
 test("claim snack screen has email input and consent checkbox", async ({ page }) => {
-  await completeRoundAndOpenClaim(page);
+  const analyticsEvents: AnalyticsEvent[] = [];
+  await completeRoundAndOpenClaim(page, analyticsEvents);
 
   await expect(page.getByText("Enter your email")).toBeVisible();
   await expect(page.getByText("FREE POTATO STICKS!")).toBeVisible();
-  await expect(page.getByText("🎁 Top 3 players win $30 credits!")).toBeVisible();
+  await expect(page.getByText(/Top 3 players/i)).toBeVisible();
+  await expect(page.getByText(/win \$30 credits!/i)).toBeVisible();
   await expect(page.getByPlaceholder("your name")).toBeVisible();
   await expect(page.locator('input[type="email"]')).toBeVisible();
   await expect(page.getByLabel(/I agree to the Terms & Conditions/i)).toBeVisible();
@@ -40,6 +59,8 @@ test("claim snack screen has email input and consent checkbox", async ({ page })
   await expect(page.getByRole("dialog", { name: "Terms & Conditions" })).toBeVisible();
   await page.getByRole("button", { name: "Close terms modal" }).click();
   await expect(page.getByRole("dialog", { name: "Terms & Conditions" })).toBeHidden();
+  expect(analyticsEvents.some((event) => event.eventName === "terms_open_click")).toBe(true);
+  expect(analyticsEvents.some((event) => event.eventName === "terms_close_click")).toBe(true);
   await expect(page.getByLabel(/I agree to receive marketing emails/i)).toBeVisible();
   await expect(page.getByRole("button", { name: "GET MY SNACK" })).toBeVisible();
 });

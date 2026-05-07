@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { TermsContent } from "@/components/TermsContent";
 import { ValidEmailScreen } from "@/components/screens/ValidEmailScreen";
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import { useGameStore } from "@/store/gameStore";
 
 export function ClaimSnackScreen() {
@@ -23,10 +24,20 @@ export function ClaimSnackScreen() {
   const discountCode = useGameStore((s) => s.discountCode) ?? "SAKURA2026";
   const setScreen = useGameStore((s) => s.setScreen);
 
+  useEffect(() => {
+    trackAnalyticsEvent("claim_view", "screen_view", { sessionToken });
+  }, [sessionToken]);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    trackAnalyticsEvent("get_my_snack_click", "button_click", { sessionToken });
+    trackAnalyticsEvent("email_submit_attempt", "funnel", { sessionToken });
+
     if (!sessionToken) {
       setError("Game session missing. Please play again before claiming your snack.");
+      trackAnalyticsEvent("email_submit_failed", "funnel", {
+        metadata: { reason: "missing_session" },
+      });
       return;
     }
 
@@ -47,12 +58,17 @@ export function ClaimSnackScreen() {
       if (!res.ok) {
         const data = await res.json().catch(() => null);
         const message = data?.error ?? "Submission failed";
+        trackAnalyticsEvent("email_submit_failed", "funnel", {
+          sessionToken,
+          metadata: { status: res.status, reason: message },
+        });
         if (res.status === 409) {
           setModalMessage(message);
           return;
         }
         throw new Error(message);
       }
+      trackAnalyticsEvent("email_submit_success", "funnel", { sessionToken });
       setSubmitted(true);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Something went wrong");
@@ -118,7 +134,10 @@ export function ClaimSnackScreen() {
             <button
               type="button"
               aria-label="Close terms modal"
-              onClick={() => setTermsModalOpen(false)}
+              onClick={() => {
+                trackAnalyticsEvent("terms_close_click", "button_click", { sessionToken });
+                setTermsModalOpen(false);
+              }}
               className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-sakura-300 bg-white p-0 text-lg font-black leading-none text-sakura-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-sakura-300"
               style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
             >
@@ -145,7 +164,10 @@ export function ClaimSnackScreen() {
         {submitted ? (
           <ValidEmailScreen
             discountCode={discountCode}
-            onLeaderboard={() => setScreen("leaderboard")}
+            onLeaderboard={() => {
+              trackAnalyticsEvent("leaderboard_after_claim_click", "button_click", { sessionToken });
+              setScreen("leaderboard");
+            }}
           />
         ) : (
           <>
@@ -222,7 +244,10 @@ export function ClaimSnackScreen() {
                 </label>
                 <button
                   type="button"
-                  onClick={() => setTermsModalOpen(true)}
+                  onClick={() => {
+                    trackAnalyticsEvent("terms_open_click", "button_click", { sessionToken });
+                    setTermsModalOpen(true);
+                  }}
                   className="font-bold text-sakura-600 underline underline-offset-2"
                 >
                   Terms &amp; Conditions

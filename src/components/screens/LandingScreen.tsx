@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import { GAME_CLOSES_AT_MS, isGameClosed } from "@/lib/contest";
 import { useGameStore } from "@/store/gameStore";
 
@@ -12,6 +13,10 @@ export function LandingScreen() {
   const [gameClosed, setGameClosed] = useState(() => isGameClosed());
   const setScreen = useGameStore((s) => s.setScreen);
   const setSessionToken = useGameStore((s) => s.setSessionToken);
+
+  useEffect(() => {
+    trackAnalyticsEvent("landing_view", "screen_view");
+  }, []);
 
   useEffect(() => {
     if (gameClosed) return;
@@ -27,6 +32,8 @@ export function LandingScreen() {
   }, [gameClosed]);
 
   async function handleStart() {
+    trackAnalyticsEvent("start_game_click", "button_click");
+
     if (isGameClosed()) {
       setGameClosed(true);
       return;
@@ -43,6 +50,7 @@ export function LandingScreen() {
       if (!res.ok) throw new Error("Failed to start session");
       const { sessionToken } = await res.json();
       setSessionToken(sessionToken);
+      trackAnalyticsEvent("session_start_success", "funnel", { sessionToken });
       setScreen("game");
     } catch {
       setError("Could not start game. Please try again.");
@@ -157,7 +165,10 @@ export function LandingScreen() {
           >
             <button
               type="button"
-              onClick={() => setScreen("leaderboard")}
+              onClick={() => {
+                trackAnalyticsEvent("view_leaderboard_click", "button_click");
+                setScreen("leaderboard");
+              }}
               className="pixel-button pixel-button-secondary w-[208px] px-3 py-3 text-[0.68rem] whitespace-nowrap"
             >
               Leaderboard

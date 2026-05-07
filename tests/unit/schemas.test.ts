@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { ScoreSubmitRequestSchema } from "../../src/schemas/score";
 import { EmailSubmitRequestSchema } from "../../src/schemas/email";
 import { LeaderboardEntrySchema } from "../../src/schemas/leaderboard";
+import { AnalyticsTrackRequestSchema } from "../../src/schemas/analytics";
 
 describe("ScoreSubmitRequestSchema", () => {
   const valid = {
@@ -84,5 +85,37 @@ describe("LeaderboardEntrySchema", () => {
         createdAt: new Date().toISOString(),
       }).success
     ).toBe(true);
+  });
+});
+
+describe("AnalyticsTrackRequestSchema", () => {
+  it("accepts valid analytics events", () => {
+    expect(
+      AnalyticsTrackRequestSchema.safeParse({
+        eventName: "start_game_click",
+        eventType: "button_click",
+        sessionToken: "tok",
+        metadata: { score: 100, source: "landing", complete: true, empty: null },
+      }).success
+    ).toBe(true);
+  });
+
+  it("rejects unknown event names", () => {
+    expect(
+      AnalyticsTrackRequestSchema.safeParse({
+        eventName: "unknown_click",
+        eventType: "button_click",
+      }).success
+    ).toBe(false);
+  });
+
+  it("rejects nested metadata", () => {
+    expect(
+      AnalyticsTrackRequestSchema.safeParse({
+        eventName: "start_game_click",
+        eventType: "button_click",
+        metadata: { nested: { value: true } },
+      }).success
+    ).toBe(false);
   });
 });

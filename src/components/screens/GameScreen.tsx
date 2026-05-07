@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { GameEngine } from "@/game/GameEngine";
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import { useGameStore } from "@/store/gameStore";
 
 export function GameScreen() {
@@ -18,6 +19,10 @@ export function GameScreen() {
   const setResult = useGameStore((s) => s.setResult);
   const setScreen = useGameStore((s) => s.setScreen);
   const setDuration = useGameStore((s) => s.setDuration);
+
+  useEffect(() => {
+    trackAnalyticsEvent("game_view", "screen_view", { sessionToken });
+  }, [sessionToken]);
 
   useEffect(() => {
     setDisplayScore(score);
@@ -36,6 +41,10 @@ export function GameScreen() {
         const duration = Date.now() - startTs;
         setDuration(duration);
         engineRef.current = null;
+        trackAnalyticsEvent("game_completed", "funnel", {
+          sessionToken,
+          metadata: { durationMs: duration },
+        });
 
         try {
           const res = await fetch("/api/score/submit", {
@@ -53,6 +62,13 @@ export function GameScreen() {
           if (res.ok) {
             const data = await res.json();
             setResult(data);
+            trackAnalyticsEvent("score_submit_success", "funnel", {
+              sessionToken,
+              metadata: {
+                score: useGameStore.getState().score,
+                durationMs: duration,
+              },
+            });
           }
         } catch {
           // proceed to end screen even on error

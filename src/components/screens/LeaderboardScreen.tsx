@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
 import { useGameStore } from "@/store/gameStore";
 import type { LeaderboardEntry } from "@/schemas/leaderboard";
 
@@ -12,6 +13,10 @@ export function LeaderboardScreen() {
   const [loading, setLoading] = useState(true);
 
   const sessionToken = useGameStore((s) => s.sessionToken);
+
+  useEffect(() => {
+    trackAnalyticsEvent("leaderboard_view", "screen_view", { sessionToken });
+  }, [sessionToken]);
 
   useEffect(() => {
     const params = sessionToken ? `?sessionToken=${encodeURIComponent(sessionToken)}` : "";
@@ -97,6 +102,7 @@ export function LeaderboardScreen() {
         href="https://applewood-signature.com/"
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackAnalyticsEvent("external_snack_link_click", "button_click", { sessionToken })}
         className="pixel-button pixel-button-secondary absolute bottom-6 w-[208px] px-3 py-3 text-[0.68rem] whitespace-nowrap"
       >
         Get my snack

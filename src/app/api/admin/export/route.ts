@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import { isAdminRequest, unauthorizedAdminResponse } from "@/lib/adminAuth";
 import { createServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -10,19 +10,8 @@ function csvCell(value: unknown) {
 }
 
 export async function GET(req: Request) {
-  const authHeader = req.headers.get("authorization") ?? "";
-  const base64 = authHeader.replace("Basic ", "");
-  const decoded = Buffer.from(base64, "base64").toString("utf8");
-  const [, password] = decoded.split(":");
-
-  const adminHash = process.env.ADMIN_PASSWORD_HASH ?? "";
-  const valid = password ? await bcrypt.compare(password, adminHash) : false;
-
-  if (!valid) {
-    return new NextResponse("Unauthorized", {
-      status: 401,
-      headers: { "WWW-Authenticate": 'Basic realm="Admin"' },
-    });
+  if (!await isAdminRequest(req)) {
+    return unauthorizedAdminResponse();
   }
 
   const supabase = createServerClient();

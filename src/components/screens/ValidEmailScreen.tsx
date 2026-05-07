@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
+import { useGameStore } from "@/store/gameStore";
 
 interface ValidEmailScreenProps {
   discountCode: string;
@@ -10,8 +12,11 @@ interface ValidEmailScreenProps {
 
 export function ValidEmailScreen({ discountCode, onLeaderboard }: ValidEmailScreenProps) {
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
+  const sessionToken = useGameStore((s) => s.sessionToken);
 
   async function handleCopy() {
+    trackAnalyticsEvent("copy_code_click", "button_click", { sessionToken });
+
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(discountCode);
