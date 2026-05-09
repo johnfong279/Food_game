@@ -10,6 +10,7 @@ export const LeaderboardEntrySchema = z.object({
 export const LeaderboardResponseSchema = z.object({
   top10: z.array(LeaderboardEntrySchema),
   yourRank: z.number().int().positive().nullable(),
+  yourEntry: LeaderboardEntrySchema.nullable(),
 });
 
 export type LeaderboardEntry = z.infer<typeof LeaderboardEntrySchema>;

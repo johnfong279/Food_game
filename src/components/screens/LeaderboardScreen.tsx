@@ -10,6 +10,7 @@ import type { LeaderboardEntry } from "@/schemas/leaderboard";
 export function LeaderboardScreen() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [yourRank, setYourRank] = useState<number | null>(null);
+  const [yourEntry, setYourEntry] = useState<LeaderboardEntry | null>(null);
   const [loading, setLoading] = useState(true);
 
   const sessionToken = useGameStore((s) => s.sessionToken);
@@ -25,6 +26,7 @@ export function LeaderboardScreen() {
       .then((data) => {
         setEntries(data.top10 ?? []);
         setYourRank(data.yourRank ?? null);
+        setYourEntry(data.yourEntry ?? null);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -42,7 +44,7 @@ export function LeaderboardScreen() {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0 }}
     >
-      <div className="flex h-[20%] w-full flex-col items-center justify-end pb-1">
+      <div className="flex h-[18%] w-full flex-col items-center justify-end pb-1">
         <h1
           className="relative flex h-[58px] w-[300px] items-center justify-center bg-center bg-no-repeat text-sm font-black uppercase leading-none text-[#4D2809] whitespace-nowrap"
           style={{
@@ -96,6 +98,20 @@ export function LeaderboardScreen() {
             </motion.div>
           );
         })}
+
+        {!loading && yourEntry && yourEntry.rank > 10 && (
+          <div className="border-t-2 border-dashed border-[#b68a65] bg-sakura-100/90">
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid h-[42px] grid-cols-[42px_1fr_72px] items-center px-3 text-[0.68rem] font-black text-[#4D2809]"
+            >
+              <span>{String(yourEntry.rank).padStart(2, "0")}</span>
+              <span className="truncate text-left">YOU</span>
+              <span className="text-right">{yourEntry.score}</span>
+            </motion.div>
+          </div>
+        )}
       </div>
 
       <a
@@ -103,7 +119,7 @@ export function LeaderboardScreen() {
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => trackAnalyticsEvent("external_snack_link_click", "button_click", { sessionToken })}
-        className="pixel-button pixel-button-secondary absolute bottom-6 w-[208px] px-3 py-3 text-[0.68rem] whitespace-nowrap"
+        className="pixel-button pixel-button-secondary absolute bottom-4 w-[208px] px-3 py-3 text-[0.68rem] whitespace-nowrap"
       >
         Get my snack
       </a>

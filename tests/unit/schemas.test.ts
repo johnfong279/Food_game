@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { ScoreSubmitRequestSchema } from "../../src/schemas/score";
 import { EmailSubmitRequestSchema } from "../../src/schemas/email";
-import { LeaderboardEntrySchema } from "../../src/schemas/leaderboard";
+import { LeaderboardEntrySchema, LeaderboardResponseSchema } from "../../src/schemas/leaderboard";
 import { AnalyticsTrackRequestSchema } from "../../src/schemas/analytics";
 
 describe("ScoreSubmitRequestSchema", () => {
@@ -83,6 +83,23 @@ describe("LeaderboardEntrySchema", () => {
         name: "Lily",
         score: 512,
         createdAt: new Date().toISOString(),
+      }).success
+    ).toBe(true);
+  });
+});
+
+describe("LeaderboardResponseSchema", () => {
+  it("accepts the current player entry outside the top 10", () => {
+    expect(
+      LeaderboardResponseSchema.safeParse({
+        top10: [],
+        yourRank: 14,
+        yourEntry: {
+          rank: 14,
+          name: "Lily",
+          score: 256,
+          createdAt: new Date().toISOString(),
+        },
       }).success
     ).toBe(true);
   });
