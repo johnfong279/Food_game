@@ -13,9 +13,25 @@ describe("admin dashboard date ranges", () => {
     expect(range.toIsoExclusive).toBe("2026-05-07T04:00:00.000Z");
   });
 
+  it("uses Toronto day boundaries across daylight saving changes", () => {
+    const spring = buildDateRange("2026-03-08", "2026-03-08");
+    expect(spring.fromIso).toBe("2026-03-08T05:00:00.000Z");
+    expect(spring.toIsoExclusive).toBe("2026-03-09T04:00:00.000Z");
+
+    const fall = buildDateRange("2026-11-01", "2026-11-01");
+    expect(fall.fromIso).toBe("2026-11-01T04:00:00.000Z");
+    expect(fall.toIsoExclusive).toBe("2026-11-02T05:00:00.000Z");
+  });
+
   it("rejects invalid date format", () => {
     expect(() => buildDateRange("05/01/2026", "2026-05-06")).toThrow(
       "Dates must use YYYY-MM-DD format"
+    );
+  });
+
+  it("rejects impossible calendar dates", () => {
+    expect(() => buildDateRange("2026-02-31", "2026-03-01")).toThrow(
+      "Invalid date range"
     );
   });
 

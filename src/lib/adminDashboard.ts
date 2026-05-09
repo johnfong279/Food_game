@@ -27,7 +27,7 @@ export interface AdminDateRange {
   toIsoExclusive: string;
 }
 
-const ADMIN_TIME_ZONE = "America/Toronto";
+export const ADMIN_TIME_ZONE = "America/Toronto";
 
 export function formatDateInput(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -82,6 +82,17 @@ function addDays(dateInput: string, days: number) {
   return formatDateInput(date);
 }
 
+function assertValidDateInput(dateInput: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+    throw new Error("Dates must use YYYY-MM-DD format");
+  }
+
+  const date = new Date(`${dateInput}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime()) || formatDateInput(date) !== dateInput) {
+    throw new Error("Invalid date range");
+  }
+}
+
 export function getDefaultAdminDateRange(now = new Date()): AdminDateRange {
   const to = formatDateInTimeZone(now);
   const from = addDays(to, -6);
@@ -89,9 +100,8 @@ export function getDefaultAdminDateRange(now = new Date()): AdminDateRange {
 }
 
 export function buildDateRange(from: string, to: string): AdminDateRange {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) {
-    throw new Error("Dates must use YYYY-MM-DD format");
-  }
+  assertValidDateInput(from);
+  assertValidDateInput(to);
 
   const fromDate = zonedDateStartToUtc(from);
   const toDate = zonedDateStartToUtc(to);

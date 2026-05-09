@@ -1,4 +1,5 @@
 import {
+  ADMIN_TIME_ZONE,
   getAdminDashboardData,
   parseAdminDateRange,
 } from "@/lib/adminDashboard";
@@ -22,7 +23,7 @@ function compactMetadata(metadata: Record<string, unknown>) {
 
 function formatTorontoDateTime(value: string) {
   return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Toronto",
+    timeZone: ADMIN_TIME_ZONE,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -49,6 +50,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     data = await getAdminDashboardData(createServerClient(), fallbackRange);
   }
 
+  const exportParams = new URLSearchParams({
+    from: data.range.from,
+    to: data.range.to,
+  });
+  const exportHref = `/api/admin/export?${exportParams.toString()}`;
+
   return (
     <main
       className="min-h-screen bg-sakura-50 px-6 py-8 text-[#4D2809]"
@@ -60,6 +67,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <h1 className="text-2xl font-black text-sakura-700">Admin Dashboard</h1>
             <p className="mt-2 text-sm font-semibold text-sakura-500">
               Leaderboard and website behavior analytics. Dates use Toronto time.
+            </p>
+            <p className="mt-1 text-xs font-semibold text-sakura-400">
+              Showing {data.range.from} 00:00 through {data.range.to} 23:59 ({ADMIN_TIME_ZONE}).
             </p>
           </div>
 
@@ -88,7 +98,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               </button>
             </form>
             <a
-              href="/api/admin/export"
+              href={exportHref}
               className="rounded-md bg-white px-4 py-2 text-sm font-bold text-sakura-600 ring-1 ring-sakura-200 hover:bg-sakura-50"
             >
               Export CSV
