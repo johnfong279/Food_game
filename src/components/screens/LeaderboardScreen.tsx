@@ -115,10 +115,9 @@ export function LeaderboardScreen() {
       </div>
 
       <a
-        href="https://applewood-signature.com/"
+        href={`/api/snack/redirect${sessionToken ? `?sessionToken=${encodeURIComponent(sessionToken)}` : ""}`}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => trackAnalyticsEvent("external_snack_link_click", "button_click", { sessionToken })}
         className="pixel-button pixel-button-secondary absolute bottom-4 w-[208px] px-3 py-3 text-[0.68rem] whitespace-nowrap"
       >
         Get my snack

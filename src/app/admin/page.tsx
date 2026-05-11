@@ -117,12 +117,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </div>
         )}
 
-        <section className="grid gap-4 md:grid-cols-4">
+        <section className="grid gap-4 md:grid-cols-5">
           {[
             ["Sessions Started", data.summary.sessionsStarted],
             ["Games Completed", data.summary.gamesCompleted],
+            ["Email Attempts", data.summary.emailSubmitAttempts],
             ["Emails Submitted", data.summary.emailsSubmitted],
-            ["Conversion Rate", formatPercent(data.summary.conversionRate)],
+            ["Email Conversion", formatPercent(data.summary.conversionRate)],
           ].map(([label, value]) => (
             <div key={label} className="rounded-lg bg-white p-5 shadow-sm">
               <p className="text-xs font-bold uppercase text-sakura-500">{label}</p>

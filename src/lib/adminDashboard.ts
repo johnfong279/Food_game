@@ -197,6 +197,23 @@ async function getLeaderboardForRange(supabase: SupabaseClient, range: AdminDate
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
 }
 
+async function getTableCountForRange(
+  supabase: SupabaseClient,
+  table: "sessions" | "scores" | "emails",
+  column: "started_at" | "created_at",
+  range: AdminDateRange
+) {
+  const { count, error } = await supabase
+    .from(table)
+    .select("id", { count: "exact", head: true })
+    .gte(column, range.fromIso)
+    .lt(column, range.toIsoExclusive);
+
+  if (error) throw error;
+
+  return count ?? 0;
+}
+
 export async function getAdminDashboardData(supabase: SupabaseClient, range: AdminDateRange) {
   const { data: events, error: eventsError } = await supabase
     .from("analytics_events")
@@ -208,19 +225,26 @@ export async function getAdminDashboardData(supabase: SupabaseClient, range: Adm
   if (eventsError) throw eventsError;
 
   const eventRows = (events ?? []) as AnalyticsRow[];
-  const sessionsStarted = getCount(eventRows, "session_start_success");
-  const gamesCompleted = getCount(eventRows, "game_completed");
-  const emailsSubmitted = getCount(eventRows, "email_submit_success");
+  const emailSubmitAttempts = getCount(eventRows, "email_submit_attempt");
+  const emailSubmitSuccessEvents = getCount(eventRows, "email_submit_success");
+  const [sessionsStarted, gamesCompleted, emailsSubmitted, leaderboard] = await Promise.all([
+    getTableCountForRange(supabase, "sessions", "started_at", range),
+    getTableCountForRange(supabase, "scores", "created_at", range),
+    getTableCountForRange(supabase, "emails", "created_at", range),
+    getLeaderboardForRange(supabase, range),
+  ]);
 
   return {
     range,
     summary: {
       sessionsStarted,
       gamesCompleted,
+      emailSubmitAttempts,
       emailsSubmitted,
       conversionRate: sessionsStarted > 0 ? emailsSubmitted / sessionsStarted : 0,
+      emailSubmitSuccessRate: emailSubmitAttempts > 0 ? emailSubmitSuccessEvents / emailSubmitAttempts : 0,
     },
-    leaderboard: await getLeaderboardForRange(supabase, range),
+    leaderboard,
     buttonClicks: countByName(eventRows, "button_click"),
     screenViews: countByName(eventRows, "screen_view"),
     funnel: countByName(eventRows, "funnel"),
