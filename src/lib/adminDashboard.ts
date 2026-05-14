@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-interface AnalyticsRow {
+export interface AnalyticsRow {
   session_id: string | null;
   event_name: string;
   event_type: string;
@@ -28,6 +28,7 @@ export interface AdminDateRange {
 }
 
 export const ADMIN_TIME_ZONE = "America/Toronto";
+const ANALYTICS_PAGE_SIZE = 1000;
 
 export function formatDateInput(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -214,17 +215,35 @@ async function getTableCountForRange(
   return count ?? 0;
 }
 
+export async function getAnalyticsEventsForRange(supabase: SupabaseClient, range: AdminDateRange) {
+  const events: AnalyticsRow[] = [];
+  let from = 0;
+
+  while (true) {
+    const to = from + ANALYTICS_PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from("analytics_events")
+      .select("session_id, event_name, event_type, metadata, created_at")
+      .gte("created_at", range.fromIso)
+      .lt("created_at", range.toIsoExclusive)
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (error) throw error;
+
+    const page = (data ?? []) as AnalyticsRow[];
+    events.push(...page);
+
+    if (page.length < ANALYTICS_PAGE_SIZE) break;
+    from += ANALYTICS_PAGE_SIZE;
+  }
+
+  return events;
+}
+
 export async function getAdminDashboardData(supabase: SupabaseClient, range: AdminDateRange) {
-  const { data: events, error: eventsError } = await supabase
-    .from("analytics_events")
-    .select("session_id, event_name, event_type, metadata, created_at")
-    .gte("created_at", range.fromIso)
-    .lt("created_at", range.toIsoExclusive)
-    .order("created_at", { ascending: false });
-
-  if (eventsError) throw eventsError;
-
-  const eventRows = (events ?? []) as AnalyticsRow[];
+  const eventRows = await getAnalyticsEventsForRange(supabase, range);
+  const landingViews = getCount(eventRows, "landing_view");
   const emailSubmitAttempts = getCount(eventRows, "email_submit_attempt");
   const emailSubmitSuccessEvents = getCount(eventRows, "email_submit_success");
   const [sessionsStarted, gamesCompleted, emailsSubmitted, leaderboard] = await Promise.all([
@@ -237,6 +256,7 @@ export async function getAdminDashboardData(supabase: SupabaseClient, range: Adm
   return {
     range,
     summary: {
+      landingViews,
       sessionsStarted,
       gamesCompleted,
       emailSubmitAttempts,

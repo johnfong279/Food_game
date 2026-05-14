@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { isAdminRequest, unauthorizedAdminResponse } from "@/lib/adminAuth";
-import { parseAdminDateRange } from "@/lib/adminDashboard";
+import {
+  getAnalyticsEventsForRange,
+  parseAdminDateRange,
+} from "@/lib/adminDashboard";
 import { createServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -25,6 +28,31 @@ function csvCell(value: unknown) {
   return `"${text.replaceAll('"', '""')}"`;
 }
 
+async function exportAnalyticsCsv(range: ReturnType<typeof parseAdminDateRange>) {
+  const supabase = createServerClient();
+  const events = await getAnalyticsEventsForRange(supabase, range);
+  const rows = events.map((event) =>
+    [
+      event.created_at,
+      event.event_name,
+      event.event_type,
+      event.session_id,
+      JSON.stringify(event.metadata ?? {}),
+    ].map(csvCell).join(",")
+  );
+  const csv = [
+    "created_at,event_name,event_type,session_id,metadata",
+    ...rows,
+  ].join("\n");
+
+  return new NextResponse(csv, {
+    headers: {
+      "Content-Type": "text/csv",
+      "Content-Disposition": `attachment; filename="web-analysis-${range.from}-to-${range.to}.csv"`,
+    },
+  });
+}
+
 export async function GET(req: Request) {
   if (!await isAdminRequest(req)) {
     return unauthorizedAdminResponse();
@@ -39,6 +67,14 @@ export async function GET(req: Request) {
       { error: error instanceof Error ? error.message : "Invalid date range" },
       { status: 400 }
     );
+  }
+
+  if (url.searchParams.get("type") === "analytics") {
+    try {
+      return await exportAnalyticsCsv(range);
+    } catch {
+      return NextResponse.json({ error: "Failed to export" }, { status: 500 });
+    }
   }
 
   const supabase = createServerClient();

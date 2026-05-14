@@ -35,7 +35,12 @@ function createSupabaseStub({
                 return {
                   lt() {
                     return {
-                      order: async () => ({ data: events, error: null }),
+                      order: () => ({
+                        range: async (from: number, to: number) => ({
+                          data: events.slice(from, to + 1),
+                          error: null,
+                        }),
+                      }),
                     };
                   },
                 };
@@ -115,7 +120,12 @@ function createRecordingSupabaseStub({
           return {
             select() {
               return createRangeQuery(table, {
-                order: async () => ({ data: events, error: null }),
+                order: () => ({
+                  range: async (from: number, to: number) => ({
+                    data: events.slice(from, to + 1),
+                    error: null,
+                  }),
+                }),
               });
             },
           };
@@ -387,5 +397,26 @@ describe("admin dashboard metrics", () => {
     expect(data.buttonClicks).toEqual([{ name: "start_game_click", count: 1 }]);
     expect(data.funnel).toEqual([{ name: "session_start_success", count: 1 }]);
     expect(data.recentEvents).toHaveLength(4);
+  });
+
+  it("paginates analytics events beyond Supabase's default row limit", async () => {
+    const range = buildDateRange("2026-05-09", "2026-05-09");
+    const events = Array.from({ length: 1005 }, (_, index) => ({
+      session_id: `session-${index}`,
+      event_name: "landing_view",
+      event_type: "screen_view",
+      metadata: {},
+      created_at: `2026-05-09T12:${String(index % 60).padStart(2, "0")}:00.000Z`,
+    }));
+
+    const data = await getAdminDashboardData(
+      createSupabaseStub({
+        events,
+      }) as never,
+      range
+    );
+
+    expect(data.screenViews).toEqual([{ name: "landing_view", count: 1005 }]);
+    expect(data.recentEvents).toHaveLength(25);
   });
 });

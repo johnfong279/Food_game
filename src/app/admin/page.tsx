@@ -55,6 +55,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     to: data.range.to,
   });
   const exportHref = `/api/admin/export?${exportParams.toString()}`;
+  const analyticsExportParams = new URLSearchParams(exportParams);
+  analyticsExportParams.set("type", "analytics");
+  const analyticsExportHref = `/api/admin/export?${analyticsExportParams.toString()}`;
 
   return (
     <main
@@ -101,7 +104,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               href={exportHref}
               className="rounded-md bg-white px-4 py-2 text-sm font-bold text-sakura-600 ring-1 ring-sakura-200 hover:bg-sakura-50"
             >
-              Export CSV
+              Export Emails
+            </a>
+            <a
+              href={analyticsExportHref}
+              className="rounded-md bg-white px-4 py-2 text-sm font-bold text-sakura-600 ring-1 ring-sakura-200 hover:bg-sakura-50"
+            >
+              Export Web Analysis
             </a>
             <form action="/api/admin/logout" method="post">
               <button className="rounded-md bg-white px-4 py-2 text-sm font-bold text-[#4D2809] ring-1 ring-sakura-200 hover:bg-sakura-50">
@@ -117,8 +126,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </div>
         )}
 
-        <section className="grid gap-4 md:grid-cols-5">
+        <section className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
           {[
+            ["Landing Views", data.summary.landingViews],
             ["Sessions Started", data.summary.sessionsStarted],
             ["Games Completed", data.summary.gamesCompleted],
             ["Email Attempts", data.summary.emailSubmitAttempts],
