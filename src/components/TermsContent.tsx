@@ -26,7 +26,7 @@ export function TermsContent() {
         <section className="space-y-1">
           <h2 className="font-semibold text-sakura-600">3. Game Period</h2>
           <p>
-            The Game closes on 24 May 2026 at 23:59. Any entries submitted
+            The Game closes on 6 September 2026 at 23:59. Any entries submitted
             after this time will not be accepted and will not be eligible for
             any rewards.
           </p>
